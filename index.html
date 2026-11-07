@@ -7,59 +7,61 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #05050a;
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --glass-highlight: rgba(255, 255, 255, 0.25);
+      --bg: #030307;
+      --glass-bg: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-highlight: rgba(255, 255, 255, 0.22);
       --ac: #8b5cf6;
-      --ac-glow: rgba(139, 92, 246, 0.6);
+      --ac-glow: rgba(139, 92, 246, 0.65);
       --tx: #ffffff;
-      --mu: rgba(255, 255, 255, 0.55);
+      --mu: rgba(255, 255, 255, 0.5);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--tx); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; height: 100vh; position: relative; }
 
-    /* Плавающий анимированный фон */
+    /* Плавающий фоновый анимированный градиент */
     .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; pointer-events: none; }
-    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
-    .blob-1 { width: 300px; height: 300px; background: #6366f1; top: -80px; left: -80px; }
-    .blob-2 { width: 350px; height: 350px; background: #a855f7; bottom: 5%; right: -80px; animation-delay: -4s; }
-    .blob-3 { width: 250px; height: 250px; background: #ec4899; top: 40%; left: 30%; animation-delay: -8s; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.45; animation: float 16s infinite alternate ease-in-out; }
+    .blob-1 { width: 320px; height: 320px; background: #6366f1; top: -100px; left: -100px; }
+    .blob-2 { width: 380px; height: 380px; background: #a855f7; bottom: -50px; right: -100px; animation-delay: -5s; }
+    .blob-3 { width: 260px; height: 260px; background: #ec4899; top: 35%; left: 25%; animation-delay: -9s; }
 
     @keyframes float {
       0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(35px, 55px) scale(1.2); }
-      100% { transform: translate(-25px, 25px) scale(0.85); }
+      50% { transform: translate(45px, 60px) scale(1.2); }
+      100% { transform: translate(-30px, 35px) scale(0.85); }
     }
 
-    /* Жидкое матовое стекло */
+    /* Эффект жидкого стекла */
     .glass-card {
       background: var(--glass-bg);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
+      backdrop-filter: blur(35px);
+      -webkit-backdrop-filter: blur(35px);
       border: 1px solid var(--glass-border);
       border-top: 1px solid var(--glass-highlight);
-      box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-      border-radius: 24px;
+      box-shadow: 0 20px 45px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      border-radius: 26px;
     }
 
-    .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 85px; }
-    .screen { display: none; padding: 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.25s ease; }
+    .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; }
+    
+    /* Скролл с большим отступом снизу, чтобы мини-плеер ничего не перекрывал */
+    .screen { display: none; padding: 18px 18px 140px 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.25s ease; }
     .screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Шапка */
     .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .user-info { display: flex; align-items: center; gap: 12px; }
-    .ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid var(--glass-highlight); box-shadow: 0 0 12px var(--ac-glow); }
+    .ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid var(--glass-highlight); box-shadow: 0 0 15px var(--ac-glow); }
     .greeting small { color: var(--mu); font-size: 12px; }
     .greeting h3 { font-size: 16px; font-weight: 600; }
 
     /* Баннер */
-    .banner { padding: 22px; margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.1)); }
+    .banner { padding: 22px; margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.08)); }
     .banner:active { transform: scale(0.98); }
-    .banner h2 { font-size: 22px; margin-bottom: 6px; text-shadow: 0 2px 10px rgba(139, 92, 246, 0.5); }
+    .banner h2 { font-size: 22px; margin-bottom: 6px; text-shadow: 0 2px 12px rgba(139, 92, 246, 0.6); }
     .banner p { color: var(--mu); font-size: 13px; }
 
     .section-title { font-size: 18px; font-weight: 600; margin: 18px 0 12px 0; letter-spacing: 0.3px; }
@@ -68,58 +70,61 @@
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .track-card { padding: 12px; transition: transform 0.2s; cursor: pointer; }
     .track-card:active { transform: scale(0.96); }
-    .cover-box { width: 100%; aspect-ratio: 1; border-radius: 18px; margin-bottom: 10px; background-size: cover; background-position: center; border: 1px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .cover-box { width: 100%; aspect-ratio: 1; border-radius: 18px; margin-bottom: 10px; background-size: cover; background-position: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
     .track-card h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
     .track-card p { font-size: 12px; color: var(--mu); margin-top: 2px; }
 
     /* Мини-плеер */
-    .mini-player { position: fixed; bottom: 84px; left: 14px; right: 14px; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; cursor: pointer; backdrop-filter: blur(35px); background: rgba(20, 15, 35, 0.7); border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(139, 92, 246, 0.15); }
+    .mini-player { position: fixed; bottom: 84px; left: 14px; right: 14px; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; cursor: pointer; backdrop-filter: blur(35px); background: rgba(15, 12, 28, 0.75); border: 1px solid rgba(139, 92, 246, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 25px rgba(139, 92, 246, 0.2); }
     .mini-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
     .mini-cover { width: 44px; height: 44px; border-radius: 12px; background-size: cover; border: 1px solid var(--glass-border); flex-shrink: 0; }
     .mini-text h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mini-text p { font-size: 12px; color: var(--mu); }
-    .play-btn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px var(--ac-glow); cursor: pointer; }
+    .play-btn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--ac-glow); cursor: pointer; }
 
     /* Нижняя навигация */
-    .nav-bar { position: fixed; bottom: 12px; left: 14px; right: 14px; height: 62px; display: flex; justify-content: space-around; align-items: center; z-index: 9; background: rgba(10, 10, 18, 0.85); backdrop-filter: blur(25px); }
+    .nav-bar { position: fixed; bottom: 12px; left: 14px; right: 14px; height: 62px; display: flex; justify-content: space-around; align-items: center; z-index: 9; background: rgba(8, 8, 14, 0.9); backdrop-filter: blur(30px); }
     .nav-btn { background: none; border: none; color: var(--mu); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; transition: color 0.2s; }
-    .nav-btn.active { color: #fff; text-shadow: 0 0 10px var(--ac-glow); }
+    .nav-btn.active { color: #fff; text-shadow: 0 0 12px var(--ac-glow); }
     .nav-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-    /* Полноэкранный плеер в стиле Liquid Glass */
-    .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #18102d 0%, #05050a 100%); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+    /* Полноэкранный плеер в концепции Ultra Indigo Liquid Glass */
+    .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1f113a 0%, #030307 85%); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between; }
     .full-player.active { transform: translateY(0); }
+    
     .full-header { display: flex; justify-content: space-between; align-items: center; }
+    .header-title { font-size: 12px; letter-spacing: 2px; color: var(--mu); text-transform: uppercase; font-weight: 600; }
     
-    .full-cover-wrapper { position: relative; width: 82%; max-width: 320px; aspect-ratio: 1; margin: 15px auto; }
-    .full-cover { width: 100%; height: 100%; border-radius: 32px; background-size: cover; background-position: center; border: 1px solid var(--glass-highlight); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(139, 92, 246, 0.3); position: relative; z-index: 2; }
+    /* Контейнер обложки с жидким неоновым стеклом */
+    .full-cover-container { position: relative; width: 85%; max-width: 300px; aspect-ratio: 1; margin: 0 auto; }
+    .full-cover-glow { position: absolute; inset: -15px; border-radius: 40px; background: linear-gradient(135deg, #a855f7, #3b82f6, #ec4899); filter: blur(35px); opacity: 0.6; animation: glowPulse 5s infinite alternate ease-in-out; }
+    @keyframes glowPulse { 0% { transform: scale(0.9); opacity: 0.4; } 100% { transform: scale(1.1); opacity: 0.75; } }
     
-    /* Свечение за обложкой */
-    .cover-glow { position: absolute; inset: -10px; border-radius: 38px; background: linear-gradient(135deg, #a855f7, #3b82f6); filter: blur(30px); opacity: 0.5; z-index: 1; animation: pulseGlow 4s infinite alternate ease-in-out; }
-    @keyframes pulseGlow { 0% { transform: scale(0.95); opacity: 0.4; } 100% { transform: scale(1.05); opacity: 0.7; } }
+    .full-cover { width: 100%; height: 100%; border-radius: 30px; background-size: cover; background-position: center; border: 1px solid var(--glass-highlight); box-shadow: 0 30px 60px rgba(0,0,0,0.8); position: relative; z-index: 2; }
 
-    .track-meta { text-align: center; margin-top: 10px; }
-    .track-meta h2 { font-size: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-meta p { color: var(--mu); font-size: 14px; margin-top: 4px; }
+    .track-details { text-align: center; }
+    .track-details h2 { font-size: 24px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px; }
+    .track-details p { color: var(--mu); font-size: 15px; margin-top: 6px; }
 
-    /* Эквалайзер */
-    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 24px; align-items: flex-end; margin: 12px 0; }
-    .eq-bar { width: 4px; background: #a855f7; border-radius: 3px; animation: eqAnim 0.7s infinite alternate ease-in-out; box-shadow: 0 0 8px var(--ac-glow); }
-    .eq-bar:nth-child(1) { animation-delay: -0.1s; height: 10px; }
-    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 20px; }
-    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 15px; }
-    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 22px; }
+    /* Детальный эквалайзер */
+    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 24px; align-items: flex-end; margin: 10px 0; }
+    .eq-bar { width: 4px; background: #a855f7; border-radius: 3px; animation: eqAnim 0.7s infinite alternate ease-in-out; box-shadow: 0 0 10px var(--ac-glow); }
+    .eq-bar:nth-child(1) { animation-delay: -0.1s; height: 8px; }
+    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 22px; }
+    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 14px; }
+    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 24px; }
     .eq-bar:nth-child(5) { animation-delay: -0.4s; height: 12px; }
     @keyframes eqAnim { 0% { height: 6px; } 100% { height: 24px; } }
 
-    /* Прогресс бар */
-    .progress-container { width: 100%; margin: 10px 0; }
-    .seek-slider { width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.15); height: 6px; border-radius: 3px; outline: none; accent-color: var(--ac); }
+    /* Элементы управления и прогресс */
+    .player-controls-area { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; backdrop-filter: blur(20px); }
+    .progress-container { width: 100%; margin-bottom: 15px; }
+    .seek-slider { width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.15); height: 5px; border-radius: 3px; outline: none; accent-color: var(--ac); }
     .time-codes { display: flex; justify-content: space-between; font-size: 12px; color: var(--mu); margin-top: 6px; }
 
-    .controls { display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
-    .ctrl-btn { background: none; border: none; color: white; cursor: pointer; font-size: 24px; opacity: 0.85; transition: opacity 0.2s; }
-    .ctrl-btn:active { opacity: 1; transform: scale(0.92); }
+    .main-controls { display: flex; justify-content: space-around; align-items: center; }
+    .ctrl-btn { background: none; border: none; color: white; cursor: pointer; font-size: 26px; opacity: 0.85; transition: transform 0.15s, opacity 0.15s; }
+    .ctrl-btn:active { transform: scale(0.9); opacity: 1; }
   </style>
 </head>
 <body>
@@ -195,20 +200,20 @@
     </div>
   </div>
 
-  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР -->
+  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР (LIQUID GLASS LUXURY) -->
   <div class="full-player" id="full-player">
     <div class="full-header">
-      <button class="ctrl-btn" onclick="closeFullPlayer()">✕</button>
-      <span style="font-size:14px; letter-spacing:1px; color:var(--mu);">СЕЙЧАС ИГРАЕТ</span>
-      <div style="width:24px;"></div>
+      <button class="ctrl-btn" style="font-size: 20px;" onclick="closeFullPlayer()">✕</button>
+      <span class="header-title">Сейчас играет</span>
+      <div style="width:20px;"></div>
     </div>
 
-    <div class="full-cover-wrapper">
-      <div class="cover-glow"></div>
+    <div class="full-cover-container">
+      <div class="full-cover-glow"></div>
       <div class="full-cover" id="full-cover" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400')"></div>
     </div>
 
-    <div class="track-meta">
+    <div class="track-details">
       <h2 id="full-title">Ultra Indigo</h2>
       <p id="full-artist">Echo Sound</p>
       
@@ -217,18 +222,20 @@
       </div>
     </div>
 
-    <div class="progress-container">
-      <input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
-      <div class="time-codes">
-        <span id="current-time">0:00</span>
-        <span id="total-duration">0:00</span>
+    <div class="player-controls-area">
+      <div class="progress-container">
+        <input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
+        <div class="time-codes">
+          <span id="current-time">0:00</span>
+          <span id="total-duration">0:00</span>
+        </div>
       </div>
-    </div>
 
-    <div class="controls">
-      <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
-      <button class="play-btn" style="width:64px; height:64px; font-size:24px;" onclick="togglePlay()">▶</button>
-      <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+      <div class="main-controls">
+        <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+        <button class="play-btn" style="width:68px; height:68px; font-size:26px;" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+      </div>
     </div>
   </div>
 
