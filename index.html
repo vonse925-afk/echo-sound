@@ -11,8 +11,8 @@
       --glass-bg: rgba(255, 255, 255, 0.04);
       --glass-border: rgba(255, 255, 255, 0.1);
       --glass-highlight: rgba(255, 255, 255, 0.22);
-      --ac: #8b5cf6;
-      --ac-glow: rgba(139, 92, 246, 0.65);
+      --ac: #a855f7;
+      --ac-glow: rgba(168, 85, 247, 0.7);
       --tx: #ffffff;
       --mu: rgba(255, 255, 255, 0.5);
     }
@@ -46,7 +46,7 @@
 
     .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; }
     
-    /* Скролл с большим отступом снизу, чтобы мини-плеер ничего не перекрывал */
+    /* Большой отступ снизу, чтобы мини-плеер не перекрывал последние карточки */
     .screen { display: none; padding: 18px 18px 140px 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.25s ease; }
     .screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -88,38 +88,64 @@
     .nav-btn.active { color: #fff; text-shadow: 0 0 12px var(--ac-glow); }
     .nav-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-    /* Полноэкранный плеер в концепции Ultra Indigo Liquid Glass */
+    /* Полноэкранный плеер */
     .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1f113a 0%, #030307 85%); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between; }
     .full-player.active { transform: translateY(0); }
     
     .full-header { display: flex; justify-content: space-between; align-items: center; }
     .header-title { font-size: 12px; letter-spacing: 2px; color: var(--mu); text-transform: uppercase; font-weight: 600; }
     
-    /* Контейнер обложки с жидким неоновым стеклом */
-    .full-cover-container { position: relative; width: 85%; max-width: 300px; aspect-ratio: 1; margin: 0 auto; }
+    .full-cover-container { position: relative; width: 85%; max-width: 280px; aspect-ratio: 1; margin: 0 auto; }
     .full-cover-glow { position: absolute; inset: -15px; border-radius: 40px; background: linear-gradient(135deg, #a855f7, #3b82f6, #ec4899); filter: blur(35px); opacity: 0.6; animation: glowPulse 5s infinite alternate ease-in-out; }
     @keyframes glowPulse { 0% { transform: scale(0.9); opacity: 0.4; } 100% { transform: scale(1.1); opacity: 0.75; } }
     
     .full-cover { width: 100%; height: 100%; border-radius: 30px; background-size: cover; background-position: center; border: 1px solid var(--glass-highlight); box-shadow: 0 30px 60px rgba(0,0,0,0.8); position: relative; z-index: 2; }
 
     .track-details { text-align: center; }
-    .track-details h2 { font-size: 24px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px; }
-    .track-details p { color: var(--mu); font-size: 15px; margin-top: 6px; }
+    .track-details h2 { font-size: 22px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-details p { color: var(--mu); font-size: 14px; margin-top: 4px; }
 
-    /* Детальный эквалайзер */
-    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 24px; align-items: flex-end; margin: 10px 0; }
+    /* Эквалайзер */
+    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 22px; align-items: flex-end; margin: 8px 0; }
     .eq-bar { width: 4px; background: #a855f7; border-radius: 3px; animation: eqAnim 0.7s infinite alternate ease-in-out; box-shadow: 0 0 10px var(--ac-glow); }
     .eq-bar:nth-child(1) { animation-delay: -0.1s; height: 8px; }
-    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 22px; }
-    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 14px; }
-    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 24px; }
-    .eq-bar:nth-child(5) { animation-delay: -0.4s; height: 12px; }
-    @keyframes eqAnim { 0% { height: 6px; } 100% { height: 24px; } }
+    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 20px; }
+    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 13px; }
+    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 22px; }
+    .eq-bar:nth-child(5) { animation-delay: -0.4s; height: 10px; }
+    @keyframes eqAnim { 0% { height: 6px; } 100% { height: 22px; } }
 
-    /* Элементы управления и прогресс */
+    /* Премиальный слайдер с неоновым следом (трейлом) */
     .player-controls-area { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; backdrop-filter: blur(20px); }
     .progress-container { width: 100%; margin-bottom: 15px; }
-    .seek-slider { width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.15); height: 5px; border-radius: 3px; outline: none; accent-color: var(--ac); }
+    
+    .seek-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      /* Динамический трейл будет управляться через JS градиентом */
+    }
+    
+    /* Кастомный светящийся бегунок */
+    .seek-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 14px var(--ac), 0 0 6px #ffffff, inset 0 0 4px var(--ac);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .seek-slider::-webkit-slider-thumb:active {
+      transform: scale(1.35);
+    }
+
     .time-codes { display: flex; justify-content: space-between; font-size: 12px; color: var(--mu); margin-top: 6px; }
 
     .main-controls { display: flex; justify-content: space-around; align-items: center; }
@@ -200,7 +226,7 @@
     </div>
   </div>
 
-  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР (LIQUID GLASS LUXURY) -->
+  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР -->
   <div class="full-player" id="full-player">
     <div class="full-header">
       <button class="ctrl-btn" style="font-size: 20px;" onclick="closeFullPlayer()">✕</button>
@@ -340,10 +366,16 @@
       `).join('');
     }
 
+    // Обновление таймлайна, времени и неонового трейла за бегунком
     audio.ontimeupdate = () => {
       if (audio.duration) {
         const slider = document.getElementById('seek-slider');
-        slider.value = (audio.currentTime / audio.duration) * 100;
+        const percent = (audio.currentTime / audio.duration) * 100;
+        
+        slider.value = percent;
+        // Создаем эффект заполненного следа (трейла) слева от ползунка
+        slider.style.background = `linear-gradient(to right, #a855f7 ${percent}%, rgba(255, 255, 255, 0.15) ${percent}%)`;
+        
         document.getElementById('current-time').textContent = formatTime(audio.currentTime);
         document.getElementById('total-duration').textContent = formatTime(audio.duration);
       }
