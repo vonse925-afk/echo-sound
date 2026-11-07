@@ -7,14 +7,14 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #07070d;
-      --glass-bg: rgba(255, 255, 255, 0.07);
-      --glass-border: rgba(255, 255, 255, 0.18);
-      --glass-highlight: rgba(255, 255, 255, 0.3);
-      --ac: #7952ff;
-      --ac-glow: rgba(121, 82, 255, 0.4);
+      --bg: #05050a;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-highlight: rgba(255, 255, 255, 0.25);
+      --ac: #8b5cf6;
+      --ac-glow: rgba(139, 92, 246, 0.6);
       --tx: #ffffff;
-      --mu: rgba(255, 255, 255, 0.6);
+      --mu: rgba(255, 255, 255, 0.55);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -22,83 +22,104 @@
 
     /* Плавающий анимированный фон */
     .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; pointer-events: none; }
-    .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.6; animation: float 18s infinite alternate ease-in-out; }
-    .blob-1 { width: 280px; height: 280px; background: #6366f1; top: -50px; left: -50px; }
-    .blob-2 { width: 320px; height: 320px; background: #a855f7; bottom: 10%; right: -60px; animation-delay: -5s; }
-    .blob-3 { width: 220px; height: 220px; background: #3b82f6; top: 45%; left: 20%; animation-delay: -10s; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
+    .blob-1 { width: 300px; height: 300px; background: #6366f1; top: -80px; left: -80px; }
+    .blob-2 { width: 350px; height: 350px; background: #a855f7; bottom: 5%; right: -80px; animation-delay: -4s; }
+    .blob-3 { width: 250px; height: 250px; background: #ec4899; top: 40%; left: 30%; animation-delay: -8s; }
 
     @keyframes float {
       0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(40px, 60px) scale(1.15); }
-      100% { transform: translate(-30px, 30px) scale(0.9); }
+      50% { transform: translate(35px, 55px) scale(1.2); }
+      100% { transform: translate(-25px, 25px) scale(0.85); }
     }
 
-    /* Эффект жидкого стекла */
+    /* Жидкое матовое стекло */
     .glass-card {
       background: var(--glass-bg);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
       border: 1px solid var(--glass-border);
       border-top: 1px solid var(--glass-highlight);
-      box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.37);
+      box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
       border-radius: 24px;
     }
 
-    .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 80px; }
-    .screen { display: none; padding: 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.3s ease; }
+    .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 85px; }
+    .screen { display: none; padding: 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.25s ease; }
     .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Шапка */
     .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .user-info { display: flex; align-items: center; gap: 12px; }
-    .ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid var(--glass-highlight); }
+    .ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid var(--glass-highlight); box-shadow: 0 0 12px var(--ac-glow); }
     .greeting small { color: var(--mu); font-size: 12px; }
     .greeting h3 { font-size: 16px; font-weight: 600; }
 
-    /* Баннеры и Сетка */
-    .banner { padding: 22px; margin-bottom: 24px; position: relative; overflow: hidden; }
-    .banner h2 { font-size: 22px; margin-bottom: 6px; }
+    /* Баннер */
+    .banner { padding: 22px; margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.1)); }
+    .banner:active { transform: scale(0.98); }
+    .banner h2 { font-size: 22px; margin-bottom: 6px; text-shadow: 0 2px 10px rgba(139, 92, 246, 0.5); }
     .banner p { color: var(--mu); font-size: 13px; }
-    .section-title { font-size: 18px; font-weight: 600; margin: 18px 0 12px 0; }
+
+    .section-title { font-size: 18px; font-weight: 600; margin: 18px 0 12px 0; letter-spacing: 0.3px; }
     
+    /* Карточки */
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .track-card { padding: 12px; transition: transform 0.2s; cursor: pointer; }
     .track-card:active { transform: scale(0.96); }
-    .cover-box { width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 10px; background-size: cover; background-position: center; border: 1px solid var(--glass-border); }
-    .track-card h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-card p { font-size: 12px; color: var(--mu); }
+    .cover-box { width: 100%; aspect-ratio: 1; border-radius: 18px; margin-bottom: 10px; background-size: cover; background-position: center; border: 1px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .track-card h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .track-card p { font-size: 12px; color: var(--mu); margin-top: 2px; }
 
     /* Мини-плеер */
-    .mini-player { position: fixed; bottom: 85px; left: 14px; right: 14px; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; cursor: pointer; }
+    .mini-player { position: fixed; bottom: 84px; left: 14px; right: 14px; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; cursor: pointer; backdrop-filter: blur(35px); background: rgba(20, 15, 35, 0.7); border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(139, 92, 246, 0.15); }
     .mini-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
     .mini-cover { width: 44px; height: 44px; border-radius: 12px; background-size: cover; border: 1px solid var(--glass-border); flex-shrink: 0; }
     .mini-text h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mini-text p { font-size: 12px; color: var(--mu); }
-    .play-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--ac); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px var(--ac-glow); }
+    .play-btn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px var(--ac-glow); cursor: pointer; }
 
-    /* Навигация */
-    .nav-bar { position: fixed; bottom: 12px; left: 14px; right: 14px; height: 62px; display: flex; justify-content: space-around; align-items: center; z-index: 9; }
-    .nav-btn { background: none; border: none; color: var(--mu); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; }
-    .nav-btn.active { color: #fff; }
+    /* Нижняя навигация */
+    .nav-bar { position: fixed; bottom: 12px; left: 14px; right: 14px; height: 62px; display: flex; justify-content: space-around; align-items: center; z-index: 9; background: rgba(10, 10, 18, 0.85); backdrop-filter: blur(25px); }
+    .nav-btn { background: none; border: none; color: var(--mu); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; transition: color 0.2s; }
+    .nav-btn.active { color: #fff; text-shadow: 0 0 10px var(--ac-glow); }
     .nav-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-    /* Полноэкранный плеер */
-    .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 7, 13, 0.95); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+    /* Полноэкранный плеер в стиле Liquid Glass */
+    .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #18102d 0%, #05050a 100%); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
     .full-player.active { transform: translateY(0); }
     .full-header { display: flex; justify-content: space-between; align-items: center; }
-    .full-cover { width: 85%; aspect-ratio: 1; margin: 20px auto; border-radius: 28px; background-size: cover; border: 1px solid var(--glass-border); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
-    .seek-slider { width: 100%; accent-color: var(--ac); margin: 15px 0; }
-    .controls { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
-    .ctrl-btn { background: none; border: none; color: white; cursor: pointer; }
+    
+    .full-cover-wrapper { position: relative; width: 82%; max-width: 320px; aspect-ratio: 1; margin: 15px auto; }
+    .full-cover { width: 100%; height: 100%; border-radius: 32px; background-size: cover; background-position: center; border: 1px solid var(--glass-highlight); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(139, 92, 246, 0.3); position: relative; z-index: 2; }
+    
+    /* Свечение за обложкой */
+    .cover-glow { position: absolute; inset: -10px; border-radius: 38px; background: linear-gradient(135deg, #a855f7, #3b82f6); filter: blur(30px); opacity: 0.5; z-index: 1; animation: pulseGlow 4s infinite alternate ease-in-out; }
+    @keyframes pulseGlow { 0% { transform: scale(0.95); opacity: 0.4; } 100% { transform: scale(1.05); opacity: 0.7; } }
 
-    /* Пульсирующий эквалайзер */
-    .eq-bars { display: flex; gap: 4px; justify-content: center; height: 20px; align-items: flex-end; margin-top: 10px; }
-    .eq-bar { width: 4px; background: var(--ac); border-radius: 2px; animation: eq 0.8s infinite alternate ease-in-out; }
-    .eq-bar:nth-child(2) { animation-delay: -0.2s; }
-    .eq-bar:nth-child(3) { animation-delay: -0.4s; }
-    .eq-bar:nth-child(4) { animation-delay: -0.6s; }
-    @keyframes eq { 0% { height: 4px; } 100% { height: 20px; } }
+    .track-meta { text-align: center; margin-top: 10px; }
+    .track-meta h2 { font-size: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-meta p { color: var(--mu); font-size: 14px; margin-top: 4px; }
+
+    /* Эквалайзер */
+    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 24px; align-items: flex-end; margin: 12px 0; }
+    .eq-bar { width: 4px; background: #a855f7; border-radius: 3px; animation: eqAnim 0.7s infinite alternate ease-in-out; box-shadow: 0 0 8px var(--ac-glow); }
+    .eq-bar:nth-child(1) { animation-delay: -0.1s; height: 10px; }
+    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 20px; }
+    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 15px; }
+    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 22px; }
+    .eq-bar:nth-child(5) { animation-delay: -0.4s; height: 12px; }
+    @keyframes eqAnim { 0% { height: 6px; } 100% { height: 24px; } }
+
+    /* Прогресс бар */
+    .progress-container { width: 100%; margin: 10px 0; }
+    .seek-slider { width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.15); height: 6px; border-radius: 3px; outline: none; accent-color: var(--ac); }
+    .time-codes { display: flex; justify-content: space-between; font-size: 12px; color: var(--mu); margin-top: 6px; }
+
+    .controls { display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
+    .ctrl-btn { background: none; border: none; color: white; cursor: pointer; font-size: 24px; opacity: 0.85; transition: opacity 0.2s; }
+    .ctrl-btn:active { opacity: 1; transform: scale(0.92); }
   </style>
 </head>
 <body>
@@ -110,6 +131,7 @@
   </div>
 
   <div class="app-container">
+    <!-- ГЛАВНАЯ -->
     <div id="screen-home" class="screen active">
       <div class="top-bar">
         <div class="user-info">
@@ -121,24 +143,33 @@
         </div>
       </div>
 
-      <div class="glass-card banner">
-        <h2>Твой микс</h2>
-        <p>Персональная подборка в стиле Ultra Indigo</p>
+      <div class="glass-card banner" onclick="playMixedTracks()">
+        <h2>⚡ Твой микс</h2>
+        <p>Подобрено в стиле Ultra Indigo. Нажми, чтобы запустить</p>
       </div>
 
-      <div class="section-title">Чарт</div>
+      <div class="section-title">Чарт треков</div>
       <div class="grid" id="chart-grid"></div>
     </div>
 
+    <!-- ПОИСК -->
     <div id="screen-search" class="screen">
-      <div class="section-title">Поиск</div>
-      <input type="text" id="search-input" placeholder="Поиск треков..." class="glass-card" style="width:100%; padding:14px; color:#fff; outline:none; margin-bottom:15px;">
+      <div class="section-title">Поиск музыки</div>
+      <input type="text" id="search-input" placeholder="Введите название трека..." class="glass-card" style="width:100%; padding:14px; color:#fff; outline:none; margin-bottom:15px; border:1px solid var(--glass-border);" oninput="filterTracks(this.value)">
       <div class="grid" id="search-grid"></div>
     </div>
 
+    <!-- МЕДИАТЕКА -->
+    <div id="screen-library" class="screen">
+      <div class="section-title">📁 Медиатека</div>
+      <p style="color:var(--mu); font-size:13px; margin-bottom:15px;">Ваши сохраненные и любимые треки</p>
+      <div class="grid" id="library-grid"></div>
+    </div>
+
+    <!-- МИНИ-ПЛЕЕР -->
     <div class="glass-card mini-player" id="mini-player" onclick="openFullPlayer()">
       <div class="mini-info">
-        <div class="mini-cover" id="mini-cover"></div>
+        <div class="mini-cover" id="mini-cover" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400')"></div>
         <div class="mini-text">
           <h4 id="mini-title">Выберите трек</h4>
           <p id="mini-artist">Echo Sound</p>
@@ -147,6 +178,7 @@
       <button class="play-btn" onclick="event.stopPropagation(); togglePlay();">▶</button>
     </div>
 
+    <!-- НИЖНЯЯ ПАНЕЛЬ -->
     <div class="glass-card nav-bar">
       <button class="nav-btn active" onclick="switchTab('home', this)">
         <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -156,35 +188,47 @@
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         Поиск
       </button>
+      <button class="nav-btn" onclick="switchTab('library', this)">
+        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+        Медиатека
+      </button>
     </div>
   </div>
 
-  <!-- Полноэкранный плеер -->
+  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР -->
   <div class="full-player" id="full-player">
     <div class="full-header">
       <button class="ctrl-btn" onclick="closeFullPlayer()">✕</button>
-      <span>Сейчас играет</span>
+      <span style="font-size:14px; letter-spacing:1px; color:var(--mu);">СЕЙЧАС ИГРАЕТ</span>
       <div style="width:24px;"></div>
     </div>
 
-    <div class="full-cover" id="full-cover"></div>
+    <div class="full-cover-wrapper">
+      <div class="cover-glow"></div>
+      <div class="full-cover" id="full-cover" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400')"></div>
+    </div>
 
-    <div style="text-align:center;">
-      <h2 id="full-title">Название трека</h2>
-      <p id="full-artist" style="color:var(--mu); margin-top:4px;">Исполнитель</p>
+    <div class="track-meta">
+      <h2 id="full-title">Ultra Indigo</h2>
+      <p id="full-artist">Echo Sound</p>
       
       <div class="eq-bars">
-        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
       </div>
     </div>
 
-    <div>
-      <input type="range" class="seek-slider" id="seek-slider" value="0" oninput="seekTrack(this.value)">
-      <div class="controls">
-        <button class="ctrl-btn" style="font-size:24px;" onclick="prevTrack()">⏮</button>
-        <button class="play-btn" style="width:60px; height:60px; font-size:22px;" onclick="togglePlay()">▶</button>
-        <button class="ctrl-btn" style="font-size:24px;" onclick="nextTrack()">⏭</button>
+    <div class="progress-container">
+      <input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
+      <div class="time-codes">
+        <span id="current-time">0:00</span>
+        <span id="total-duration">0:00</span>
       </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+      <button class="play-btn" style="width:64px; height:64px; font-size:24px;" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
     </div>
   </div>
 
@@ -211,15 +255,22 @@
     let currentTrackIdx = 0;
     const audio = document.getElementById('audio-player');
 
-    function renderTracks() {
-      const grid = document.getElementById('chart-grid');
-      grid.innerHTML = tracks.map((t, idx) => `
+    function renderGrids() {
+      const chartGrid = document.getElementById('chart-grid');
+      const searchGrid = document.getElementById('search-grid');
+      const libraryGrid = document.getElementById('library-grid');
+
+      const html = tracks.map((t, idx) => `
         <div class="glass-card track-card" onclick="playTrack(${idx})">
           <div class="cover-box" style="background-image:url('${t.cover}')"></div>
           <h4>${t.title}</h4>
           <p>${t.artist}</p>
         </div>
       `).join('');
+
+      chartGrid.innerHTML = html;
+      searchGrid.innerHTML = html;
+      libraryGrid.innerHTML = html;
     }
 
     function playTrack(idx) {
@@ -228,6 +279,10 @@
       audio.src = t.url;
       audio.play();
 
+      updatePlayerUI(t);
+    }
+
+    function updatePlayerUI(t) {
       document.getElementById('mini-cover').style.backgroundImage = `url('${t.cover}')`;
       document.getElementById('mini-title').textContent = t.title;
       document.getElementById('mini-artist').textContent = t.artist;
@@ -249,6 +304,12 @@
       }
     }
 
+    function playMixedTracks() {
+      const randomIdx = Math.floor(Math.random() * tracks.length);
+      playTrack(randomIdx);
+      openFullPlayer();
+    }
+
     function openFullPlayer() { document.getElementById('full-player').classList.add('active'); }
     function closeFullPlayer() { document.getElementById('full-player').classList.remove('active'); }
     function prevTrack() { playTrack((currentTrackIdx - 1 + tracks.length) % tracks.length); }
@@ -261,7 +322,39 @@
       btn.classList.add('active');
     }
 
-    renderTracks();
+    function filterTracks(query) {
+      const filtered = tracks.filter(t => t.title.toLowerCase().includes(query.toLowerCase()) || t.artist.toLowerCase().includes(query.toLowerCase()));
+      document.getElementById('search-grid').innerHTML = filtered.map((t, idx) => `
+        <div class="glass-card track-card" onclick="playTrack(${tracks.indexOf(t)})">
+          <div class="cover-box" style="background-image:url('${t.cover}')"></div>
+          <h4>${t.title}</h4>
+          <p>${t.artist}</p>
+        </div>
+      `).join('');
+    }
+
+    audio.ontimeupdate = () => {
+      if (audio.duration) {
+        const slider = document.getElementById('seek-slider');
+        slider.value = (audio.currentTime / audio.duration) * 100;
+        document.getElementById('current-time').textContent = formatTime(audio.currentTime);
+        document.getElementById('total-duration').textContent = formatTime(audio.duration);
+      }
+    };
+
+    function seekAudio(val) {
+      if (audio.duration) {
+        audio.currentTime = (val / 100) * audio.duration;
+      }
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    renderGrids();
   </script>
 </body>
 </html>
