@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Echo Sound</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#000;--card:#161618;--ac:#6366F1;--tx:#fff;--mu:#9CA3AF}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,Roboto,sans-serif;padding-bottom:180px;overflow-x:hidden}
+.screen{display:none;padding:16px}.screen.on{display:block;animation:in .3s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.ava{width:42px;height:42px;border-radius:50%;background:var(--ac) center/cover;display:flex;align-items:center;justify-content:center;font-weight:600}
+.top .t{flex:1}.top small{color:var(--mu);font-size:13px}.top b{display:block;font-size:18px;font-weight:600}
+svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mix{border-radius:24px;padding:28px 22px;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 0 40px rgba(99,102,241,.45);margin-bottom:26px;transition:.15s}
+.mix:active{transform:scale(.97)}.mix h2{font-size:26px}.mix p{opacity:.8;margin-top:6px;font-size:14px}
+h3{font-size:19px;margin:6px 0 12px}
+.hs{display:flex;gap:12px;overflow-x:auto;margin-bottom:24px;scrollbar-width:none}.hs::-webkit-scrollbar{display:none}
+.hs .c{width:130px;flex:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.c{transition:.15s}.c:active{transform:scale(.95)}
+.cv{aspect-ratio:1;border-radius:16px;background-size:cover;background-position:center}
+.c .n,.r .n{font-size:14px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c .a,.r .a{font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:8px;margin-bottom:8px}
+.r:active{background:#222}.r .cv{width:48px;border-radius:10px;flex:none}.r .n{margin:0}.r .i{flex:1;min-width:0}
+.hb{background:none;border:0;color:var(--mu);padding:6px}.hb.on{color:var(--ac)}.hb.on svg{fill:var(--ac)}
+input.s{width:100%;padding:14px 16px;border-radius:14px;border:0;background:var(--card);color:var(--tx);font-size:16px;margin-bottom:16px;outline:none}
+.e{color:var(--mu);text-align:center;padding:30px 0}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(10,10,12,.96);border-top:1px solid #1f1f22;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;background:none;border:0;color:var(--mu);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button.on{color:var(--ac)}
+#mini{position:fixed;left:10px;right:10px;bottom:calc(66px + env(safe-area-inset-bottom));background:var(--card);border-radius:16px;padding:8px;display:none;align-items:center;gap:10px;z-index:4;box-shadow:0 4px 20px rgba(99,102,241,.25)}
+#mini .cv{width:44px;border-radius:10px;flex:none}#mini .i{flex:1;min-width:0}
+.pb{background:var(--ac);border:0;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.pb svg{fill:#fff;stroke:#fff;width:20px;height:20px}
+#full{position:fixed;inset:0;background:#000;z-index:10;transform:translateY(100%);transition:transform .35s ease;padding:20px 24px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+#full.on{transform:none}
+#full .cv{width:100%;max-width:320px;margin:20px auto 24px;border-radius:24px;box-shadow:0 0 50px rgba(99,102,241,.4)}
+.eq{display:flex;gap:4px;height:28px;align-items:flex-end;justify-content:center;margin-bottom:14px}
+.eq i{width:5px;height:6px;background:var(--ac);border-radius:3px}
+.eq.go i{animation:b .8s infinite ease-in-out}
+.eq i:nth-child(2){animation-delay:.15s!important}.eq i:nth-child(3){animation-delay:.3s!important}.eq i:nth-child(4){animation-delay:.45s!important}.eq i:nth-child(5){animation-delay:.6s!important}
+@keyframes b{0%,100%{height:6px}50%{height:28px}}
+.ft{display:flex;align-items:center;gap:10px}.ft .i{flex:1;min-width:0}.ft .n{font-size:22px;font-weight:600}.ft .a{color:var(--mu);margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--ac);margin:18px 0 4px}
+.tm{display:flex;justify-content:space-between;color:var(--mu);font-size:12px}
+.ctl{display:flex;justify-content:center;align-items:center;gap:30px;margin-top:20px}
+.ctl button{background:none;border:0;color:#fff}.ctl svg{width:32px;height:32px}
+.ctl .pb{width:70px;height:70px}.ctl .pb svg{width:30px;height:30px}
+.down{background:none;border:0;color:var(--mu);align-self:flex-start}
+</style></head><body>
+
+<div class="screen on" id="home">
+  <div class="top"><div class="ava" id="ava"></div><div class="t"><small id="gr">Добрый день</small><b id="nm">Друг</b></div>
+  <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg></div>
+  <div class="mix" id="mix"><h2>Твой микс</h2><p>Подобрано специально для тебя</p></div>
+  <h3>Недавно прослушано</h3><div class="hs" id="rec"></div>
+  <h3>Чарт</h3><div class="grid" id="chart"></div>
+</div>
+<div class="screen" id="search"><input class="s" id="q" placeholder="Трек или исполнитель" autocomplete="off"><div id="sr"></div></div>
+<div class="screen" id="lib"><h3>Любимые треки</h3><div id="lk"></div></div>
+
+<div id="mini"><div class="cv" id="mc"></div><div class="i" onclick="openFull()"><div class="n" id="mn"></div><div class="a" id="ma"></div></div><button class="pb" onclick="tog()" id="mp"></button></div>
+
+<div id="full">
+  <button class="down" onclick="closeFull()"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="cv" id="fc"></div>
+  <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="ft"><div class="i"><div class="n" id="fn"></div><div class="a" id="fa"></div></div><button class="hb" id="fh" onclick="like(cur())"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11z"/></svg></button></div>
+  <input type="range" id="sk" min="0" max="100" value="0">
+  <div class="tm"><span id="t1">0:00</span><span id="t2">0:00</span></div>
+  <div class="ctl"><button onclick="step(-1)"><svg viewBox="0 0 24 24"><path d="M19 20L9 12l10-8zM5 4v16"/></svg></button><button class="pb" onclick="tog()" id="fp"></button><button onclick="step(1)"><svg viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 4v16"/></svg></button></div>
+</div>
+
+<nav>
+  <button class="on" data-s="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10H3z"/></svg>Главная</button>
+  <button data-s="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>Поиск</button>
+  <button data-s="lib"><svg viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v11H3z"/></svg>Медиатека</button>
+</nav>
+
+<script>
+const CLIENT_ID="";
+const PLAY='<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>',PAUSE='<svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16"/></svg>';
+const H='<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11z"/></svg>';
+const DEMO=["Neon Drive","Midnight Echo","Indigo Rain","Slow Orbit","City Lights","Deep Blue","Afterglow","Velvet Sky"].map((n,i)=>({id:"d"+i,name:n,artist:"SoundHelix",img:"",audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-"+(i+1)+".mp3"}));
+const tg=window.Telegram&&Telegram.WebApp;
+if(tg){tg.ready();tg.expand();try{tg.setHeaderColor("#000000");tg.setBackgroundColor("#000000")}catch(e){}}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ld=(k)=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let likes=ld("likes"),recent=ld("recent"),list=[],idx=-1,chart=[];
+const au=new Audio();
+
+function cover(t){
+  if(t.img)return`background-image:url(${esc(t.img)})`;
+  let h=0;for(const c of t.name)h=(h*31+c.charCodeAt(0))%360;
+  return`background:linear-gradient(135deg,hsl(${h},70%,45%),hsl(${(h+60)%360},70%,25%))`;
+}
+function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+const cur=()=>list[idx];
+const isLiked=t=>t&&likes.some(l=>l.id===t.id);
+
+function card(t,i,arr,id){return`<div class="c" onclick="go('${id}',${i})"><div class="cv" style="${cover(t)}"></div><div class="n">${esc(t.name)}</div><div class="a">${esc(t.artist)}</div></div>`}
+function row(t,i,id){return`<div class="r"><div class="cv" style="${cover(t)}" onclick="go('${id}',${i})"></div><div class="i" onclick="go('${id}',${i})"><div class="n">${esc(t.name)}</div><div class="a">${esc(t.artist)}</div></div><button class="hb ${isLiked(t)?"on":""}" onclick="likeI('${id}',${i})">${H}</button></div>`}
+const src={chart:()=>chart,recent:()=>recent,sr:()=>srl,lk:()=>likes,mix:()=>mixl};
+let srl=[],mixl=[];
+function go(id,i){play(src[id](),i)}
+function likeI(id,i){like(src[id]()[i])}
+
+async function fetchTracks(q){
+  if(CLIENT_ID){try{
+    const u="https://api.jamendo.com/v3.0/tracks/?client_id="+CLIENT_ID+"&format=json&limit=20&audioformat=mp32&imagesize=300"+(q?"&search="+encodeURIComponent(q):"&order=popularity_week");
+    const j=await(await fetch(u)).json();
+    return j.results.map(x=>({id:"j"+x.id,name:x.name,artist:x.artist_name,img:x.image,audio:x.audio}));
+  }catch(e){}}
+  return DEMO.filter(t=>!q||(t.name+t.artist).toLowerCase().includes(q.toLowerCase()));
+}
+
+function renderAll(){
+  $("chart").innerHTML=chart.map((t,i)=>card(t,i,chart,"chart")).join("");
+  $("rec").innerHTML=recent.length?recent.map((t,i)=>card(t,i,recent,"recent")).join(""):'<div class="e" style="padding:10px 0">Пока пусто</div>';
+  $("lk").innerHTML=likes.length?likes.map((t,i)=>row(t,i,"lk")).join(""):'<div class="e">Нажми на сердечко у трека</div>';
+  $("sr").innerHTML=srl.length?srl.map((t,i)=>row(t,i,"sr")).join(""):($("q").value?'<div class="e">Ничего не найдено</div>':"");
+}
+
+function play(l,i){
+  list=l;idx=i;const t=cur();
+  au.src=t.audio;au.play().catch(()=>{});
+  recent=[t,...recent.filter(r=>r.id!==t.id)].slice(0,10);sv("recent",recent);
+  ui();renderAll();
+}
+function step(d){if(!list.length)return;idx=(idx+d+list.length)%list.length;play(list,idx)}
+function tog(){au.paused?au.play():au.pause()}
+function like(t){
+  if(!t)return;
+  likes=isLiked(t)?likes.filter(l=>l.id!==t.id):[t,...likes];
+  sv("likes",likes);ui();renderAll();
+  if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred("light");
+}
+function ui(){
+  const t=cur();if(!t)return;
+  $("mini").style.display="flex";
+  $("mc").style.cssText=cover(t);$("fc").style.cssText=cover(t)+";aspect-ratio:1";
+  $("mn").textContent=$("fn").textContent=t.name;$("ma").textContent=$("fa").textContent=t.artist;
+  $("fh").className="hb"+(isLiked(t)?" on":"");
+  pp();
+}
+function pp(){const h=au.paused?PLAY:PAUSE;$("mp").innerHTML=h;$("fp").innerHTML=h;$("eq").classList.toggle("go",!au.paused)}
+au.onplay=pp;au.onpause=pp;au.onended=()=>step(1);
+au.ontimeupdate=()=>{if(au.duration){$("sk").value=au.currentTime/au.duration*100;$("t1").textContent=fmt(au.currentTime);$("t2").textContent=fmt(au.duration)}};
+$("sk").oninput=e=>{if(au.duration)au.currentTime=e.target.value/100*au.duration};
+function openFull(){$("full").classList.add("on")}
+function closeFull(){$("full").classList.remove("on")}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button,.screen").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");$(b.dataset.s).classList.add("on");
+});
+let tm;$("q").oninput=e=>{clearTimeout(tm);tm=setTimeout(async()=>{
+  const q=e.target.value.trim();srl=q?await fetchTracks(q):[];renderAll()},400)};
+$("mix").onclick=()=>{mixl=[...chart].sort(()=>Math.random()-.5);if(mixl.length)play(mixl,0)};
+
+const u=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
+const hr=new Date().getHours();
+$("gr").textContent=hr<6?"Доброй ночи":hr<12?"Доброе утро":hr<18?"Добрый день":"Добрый вечер";
+if(u){$("nm").textContent=u.first_name;if(u.photo_url)$("ava").style.backgroundImage="url("+u.photo_url+")";else $("ava").textContent=u.first_name[0]}
+else $("ava").textContent="E";
+fetchTracks("").then(r=>{chart=r;renderAll()});
+renderAll();
+</script></body></html>
