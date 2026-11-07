@@ -83,6 +83,28 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 #toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-90px);background:#a855f7;padding:10px 18px;border-radius:14px;z-index:300;transition:transform .3s;font-size:14px}
 #toast.on{transform:translate(-50%,0)}
 #sh,#rp{opacity:.4}#sh.on,#rp.on{opacity:1;color:#c084fc;text-shadow:0 0 12px var(--ac-glow)}
+
+.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.i.f{fill:currentColor}
+.ctrl-btn{display:flex;align-items:center;justify-content:center}.ctrl-btn .i{width:28px;height:28px}
+.play-btn .i{width:20px;height:20px;stroke-width:1}.bp{width:68px;height:68px}.bp .i{width:28px;height:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn .i{width:18px;height:18px}
+.cover-box .i{width:40px;height:40px}
+.list{display:flex;flex-direction:column;gap:2px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:16px;cursor:pointer;transition:background .15s}
+.row:active{background:rgba(255,255,255,.07)}
+.row .th{width:52px;height:52px;border-radius:12px;background-size:cover;background-position:center;background-color:#1a1530;flex-shrink:0;border:1px solid var(--glass-border)}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .tx span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .ic{background:none;border:0;color:var(--mu);padding:8px;display:flex}
+.row .ic.on{color:#ec4899}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#6b7280;flex-shrink:0}
+.dot.audius{background:#a855f7}.dot.itunes{background:#fa2d48}
+.chips{display:flex;gap:8px;margin-bottom:14px}
+.chip{padding:8px 16px;border-radius:14px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--tx);font-size:14px}
+.chip.on{background:rgba(168,85,247,.25);border-color:rgba(168,85,247,.7);box-shadow:0 0 14px rgba(168,85,247,.35)}
 </style></head>
 <body>
 <div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
@@ -91,31 +113,32 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
   <div id="screen-home" class="screen active">
     <div class="top-bar"><div class="user-info"><div class="ava" id="user-ava">E</div>
       <div class="greeting"><small id="time-greeting">Добрый день</small><h3 id="user-name">Слушатель</h3></div></div></div>
-    <div class="glass-card banner" onclick="playMixed()"><h2>⚡ Твой микс</h2><p>Случайные треки из твоей медиатеки. Нажми, чтобы запустить</p></div>
+    <div class="glass-card banner" onclick="playMixed()"><h2 style="display:flex;align-items:center;gap:8px"><svg class="i f" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg> Твой микс</h2><p>Случайные треки из твоей медиатеки. Нажми, чтобы запустить</p></div>
     <div class="section-title">Чарт треков</div>
-    <div class="grid" id="chart-grid"></div>
+    <div class="list" id="chart-grid"></div>
   </div>
 
   <div id="screen-search" class="screen">
     <div class="section-title">Поиск музыки</div>
     <input type="text" id="search-input" placeholder="Название или исполнитель..." class="glass-card search-input" autocomplete="off" oninput="onSearchInput(this.value)">
-    <div class="grid" id="search-grid"><div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div></div>
+    <div class="chips"><button class="chip on" onclick="setF('all',this)">Все</button><button class="chip" onclick="setF('audius',this)">Audius</button><button class="chip" onclick="setF('itunes',this)">iTunes</button></div>
+    <div class="list" id="search-grid"><div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div></div>
   </div>
 
   <div id="screen-library" class="screen">
-    <div class="section-title">📁 Медиатека</div>
+    <div class="section-title">Медиатека</div>
     <div class="section-title" style="font-size:15px;margin-top:4px">Плейлисты</div>
     <div class="grid" id="pl-grid"></div>
     <div class="section-title" style="font-size:15px">Любимые</div>
-    <div class="grid" id="library-grid"></div>
+    <div class="list" id="library-grid"></div>
   </div>
 
-  <div id="screen-pl" class="screen"><div id="pl-head"></div><div class="grid" id="pl-tracks"></div></div>
+  <div id="screen-pl" class="screen"><div id="pl-head"></div><div class="list" id="pl-tracks"></div></div>
 
   <div class="glass-card mini-player" id="mini-player" onclick="openFull()">
     <div class="mini-info"><div class="mini-cover" id="mini-cover"></div>
       <div class="mini-text"><h4 id="mini-title">Выберите трек</h4><p id="mini-artist">Echo Sound</p></div></div>
-    <button class="play-btn" onclick="event.stopPropagation();togglePlay()">▶</button>
+    <button class="play-btn" onclick="event.stopPropagation();togglePlay()"></button>
   </div>
 
   <div class="glass-card nav-bar">
@@ -126,7 +149,7 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 </div>
 
 <div class="full-player" id="full-player">
-  <div class="full-header"><button class="ctrl-btn" style="font-size:20px" onclick="closeFull()">✕</button><span class="header-title">Сейчас играет</span><div style="width:20px"></div></div>
+  <div class="full-header"><button class="ctrl-btn" onclick="closeFull()"><svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><span class="header-title">Сейчас играет</span><div style="width:20px"></div></div>
   <div class="full-cover-container"><div class="full-cover-glow"></div><div class="full-cover" id="full-cover"></div></div>
   <div class="track-details"><h2 id="full-title">Echo Sound</h2><p id="full-artist">Выберите трек</p>
     <div class="eq-bars paused" id="eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div>
@@ -134,11 +157,11 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
     <div class="progress-container"><input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
       <div class="time-codes"><span id="current-time">0:00</span><span id="total-duration">0:00</span></div></div>
     <div class="main-controls">
-      <button class="ctrl-btn" id="sh" onclick="toggleShuffle()">🔀</button>
-      <button class="ctrl-btn" onclick="step(-1)">⏮</button>
-      <button class="play-btn" style="width:68px;height:68px;font-size:26px" onclick="togglePlay()">▶</button>
-      <button class="ctrl-btn" onclick="step(1)">⏭</button>
-      <button class="ctrl-btn" id="rp" onclick="toggleRepeat()">🔁</button></div>
+      <button class="ctrl-btn" id="sh" onclick="toggleShuffle()"></button>
+      <button class="ctrl-btn" onclick="step(-1)"><svg class="i f" viewBox="0 0 24 24"><path d="M19 20L9 12l10-8zM5 4v16"/></svg></button>
+      <button class="play-btn bp" onclick="togglePlay()"></button>
+      <button class="ctrl-btn" onclick="step(1)"><svg class="i f" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 4v16"/></svg></button>
+      <button class="ctrl-btn" id="rp" onclick="toggleRepeat()"></button></div>
   </div>
 </div>
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box glass-card" id="modal-box"></div></div>
@@ -159,25 +182,39 @@ const demo=[
  ["Velvet Sky","Luna Phase","photo-1518709268805-4e9042af9f23"],["Deep Blue","Sub Zero","photo-1550684848-fac1c5b4e853"]
 ].map((d,i)=>({id:"d"+i,title:d[0],artist:d[1],cover:"https://images.unsplash.com/"+d[2]+"?w=400",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-"+(i+1)+".mp3",src:"demo"}));
 
+const IC={
+ heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ x:'<path d="M18 6L6 18M6 6l12 12"/>',
+ shuffle:'<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
+ repeat:'<path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/>',
+ repeat1:'<path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3M11 10h1v4"/>',
+ play:'<path d="M7 4l13 8-13 8z"/>',
+ pause:'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>',
+ left:'<path d="M15 18l-6-6 6-6"/>',
+ image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+ edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>'
+};
+const ic=(n,f)=>`<svg class="i${f?" f":""}" viewBox="0 0 24 24">${IC[n]}</svg>`;
+let filt="all";
+function fl(){return results.filter(t=>filt==="all"||t.src===filt)}
 const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast("Не хватило памяти")}};
 let lib=ld("lib",[]),pls=ld("pls",[]),results=[],queue=[],qi=0,curPl=null,pend=null,shuffle=false,rep=0;
 const audio=$('audio-player');
-const listOf=n=>({chart:demo,search:results,lib:lib,pl:curPl?curPl.tracks:[]}[n]);
+const listOf=n=>({chart:demo,search:fl(),lib:lib,pl:curPl?curPl.tracks:[]}[n]);
 const saved=t=>lib.some(x=>x.id===t.id);
 function grad(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return `linear-gradient(135deg,hsl(${h},70%,45%),hsl(${(h+60)%360},70%,25%))`}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
 
 /* Карточки */
-function card(t,n,i){
-  const tag=t.src==="itunes"?" · превью 30с":"";
-  const right=n==='pl'
-    ?`<button class="heart" onclick="event.stopPropagation();rmFromPl(${i})">✕</button>`
-    :`<button class="heart ${saved(t)?"on":""}" onclick="event.stopPropagation();like('${n}',${i})">${saved(t)?"♥":"♡"}</button>`;
-  const left=n==='pl'?"":`<button class="plus" onclick="event.stopPropagation();pickPl('${n}',${i})">＋</button>`;
-  return `<div class="glass-card track-card" onclick="playFrom('${n}',${i})">
-    <div class="cover-box" style="background-image:url('${esc(t.cover)}')"></div>${left}${right}
-    <h4>${esc(t.title)}</h4><p>${esc(t.artist)}${tag}</p></div>`;
+function row(t,n,i){
+  const src=t.src==="audius"?"Audius":t.src==="itunes"?"iTunes · превью 30с":"Демо";
+  const act=n==='pl'
+    ?`<button class="ic" onclick="event.stopPropagation();rmFromPl(${i})">${ic('x')}</button>`
+    :`<button class="ic" onclick="event.stopPropagation();pickPl('${n}',${i})">${ic('plus')}</button><button class="ic ${saved(t)?'on':''}" onclick="event.stopPropagation();like('${n}',${i})">${ic('heart',saved(t))}</button>`;
+  return `<div class="row" onclick="playFrom('${n}',${i})"><div class="th" style="background-image:url('${esc(t.cover)}')"></div><div class="tx"><b>${esc(t.title)}</b><span><i class="dot ${t.src}"></i>${src} · ${esc(t.artist)}</span></div>${act}</div>`;
 }
 function plCard(p){
   return `<div class="glass-card track-card" onclick="openPl('${p.id}')">
@@ -185,12 +222,17 @@ function plCard(p){
     <h4>${esc(p.name)}</h4><p>${p.tracks.length} треков</p></div>`;
 }
 function renderAll(){
-  $('chart-grid').innerHTML=demo.map((t,i)=>card(t,'chart',i)).join('');
-  $('pl-grid').innerHTML=`<div class="glass-card track-card" onclick="newPl()"><div class="cover-box" style="display:flex;align-items:center;justify-content:center;font-size:42px">＋</div><h4>Новый плейлист</h4><p>Создать</p></div>`+pls.map(plCard).join('');
-  $('library-grid').innerHTML=lib.length?lib.map((t,i)=>card(t,'lib',i)).join(''):'<div class="empty">Пока пусто. Найди трек и нажми ♡</div>';
+  $('chart-grid').innerHTML=demo.map((t,i)=>row(t,'chart',i)).join('');
+  $('pl-grid').innerHTML=`<div class="glass-card track-card" onclick="newPl()"><div class="cover-box" style="display:flex;align-items:center;justify-content:center;color:var(--mu)">${ic('plus')}</div><h4>Новый плейлист</h4><p>Создать</p></div>`+pls.map(plCard).join('');
+  $('library-grid').innerHTML=lib.length?lib.map((t,i)=>row(t,'lib',i)).join(''):'<div class="empty">Пока пусто. Найди трек и нажми на сердце</div>';
   renderSearch();renderPl();
 }
-function renderSearch(){if(results.length)$('search-grid').innerHTML=results.map((t,i)=>card(t,'search',i)).join('')}
+function renderSearch(){
+  if(!results.length)return;
+  const v=fl();
+  $('search-grid').innerHTML=v.length?v.map((t,i)=>row(t,'search',i)).join(''):'<div class="empty">Нет результатов из этого источника</div>';
+}
+function setF(f,b){filt=f;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');renderSearch()}
 function like(n,i){
   const t=listOf(n)[i];
   lib=saved(t)?lib.filter(x=>x.id!==t.id):[...lib,t];
@@ -212,7 +254,7 @@ function createPl(){
 }
 function pickPl(n,i){
   pend=listOf(n)[i];
-  modal(`<h3>Добавить в плейлист</h3>`+pls.map(p=>`<button class="btn sec" onclick="addToPl('${p.id}')">${esc(p.name)} (${p.tracks.length})</button>`).join('')+`<button class="btn" onclick="newPl(true)">＋ Новый плейлист</button>`);
+  modal(`<h3>Добавить в плейлист</h3>`+pls.map(p=>`<button class="btn sec" onclick="addToPl('${p.id}')">${esc(p.name)} (${p.tracks.length})</button>`).join('')+`<button class="btn" onclick="newPl(true)">Новый плейлист</button>`);
 }
 function addToPl(id){
   const p=pls.find(x=>x.id===id);
@@ -225,10 +267,10 @@ function openPl(id){curPl=pls.find(p=>p.id===id);showScreen('pl');renderPl()}
 function closePl(){curPl=null;showScreen('library')}
 function renderPl(){
   const p=curPl;if(!p)return;
-  $('pl-head').innerHTML=`<button class="ctrl-btn" style="font-size:18px;margin-bottom:12px" onclick="closePl()">← Назад</button>
+  $('pl-head').innerHTML=`<button class="ctrl-btn" style="margin-bottom:12px;gap:4px;font-size:16px;justify-content:flex-start" onclick="closePl()">${ic('left')} Назад</button>
   <div class="pl-top"><div class="pl-cover" style="background-image:${p.cover?`url('${p.cover}')`:grad(p.name)}"></div><div><h2>${esc(p.name)}</h2><p style="color:var(--mu);margin-top:4px">${p.tracks.length} треков</p></div></div>
-  <div class="pl-btns"><button class="btn" onclick="playPl(false)">▶ Играть</button><button class="btn" onclick="playPl(true)">🔀</button><button class="btn" onclick="pickCover()">🖼 Обложка</button><button class="btn" onclick="renamePl()">✏️</button><button class="btn" onclick="delPl()">🗑</button></div>`;
-  $('pl-tracks').innerHTML=p.tracks.length?p.tracks.map((t,i)=>card(t,'pl',i)).join(''):'<div class="empty">Пусто. Нажми ＋ у трека, чтобы добавить</div>';
+  <div class="pl-btns"><button class="btn" onclick="playPl(false)">${ic('play',true)} Играть</button><button class="btn" onclick="playPl(true)">${ic('shuffle')}</button><button class="btn" onclick="pickCover()">${ic('image')} Обложка</button><button class="btn" onclick="renamePl()">${ic('edit')}</button><button class="btn" onclick="delPl()">${ic('trash')}</button></div>`;
+  $('pl-tracks').innerHTML=p.tracks.length?p.tracks.map((t,i)=>row(t,'pl',i)).join(''):'<div class="empty">Пусто. Нажми плюс у трека, чтобы добавить</div>';
 }
 function playPl(sh){
   if(!curPl.tracks.length)return;
@@ -279,7 +321,7 @@ async function handleAdd(){
   let n=0;
   for(const id of q.split(",")){try{const t=await resolve(id);if(t&&!saved(t)){lib.push(t);n++}}catch(e){}}
   sv("lib",lib);renderAll();
-  toast(n?"Добавлено в медиатеку ♥":"Уже в медиатеке");
+  toast(n?"Добавлено в медиатеку":"Уже в медиатеке");
   switchTab("library",document.querySelectorAll(".nav-btn")[2]);
   history.replaceState(null,"",location.pathname);
 }
@@ -292,7 +334,7 @@ function ui(t){
   $('mini-title').textContent=$('full-title').textContent=t.title;
   $('mini-artist').textContent=$('full-artist').textContent=t.artist;
 }
-function btns(){const p=audio.paused;document.querySelectorAll('.play-btn').forEach(b=>b.textContent=p?'▶':'❚❚');$('eq').classList.toggle('paused',p)}
+function btns(){const p=audio.paused;document.querySelectorAll('.play-btn').forEach(b=>b.innerHTML=ic(p?'play':'pause',true));$('eq').classList.toggle('paused',p)}
 audio.onplay=btns;audio.onpause=btns;
 audio.onended=()=>step(1,true);
 function togglePlay(){if(!audio.src){playFrom('chart',0);return}audio.paused?audio.play():audio.pause()}
@@ -306,7 +348,7 @@ function step(d,auto){
 }
 function toggleShuffle(){shuffle=!shuffle;modeUi();toast(shuffle?"Случайный порядок":"По порядку добавления")}
 function toggleRepeat(){rep=(rep+1)%3;modeUi();toast(["Повтор выключен","Повтор всех треков","Повтор одного трека"][rep])}
-function modeUi(){$('sh').classList.toggle('on',shuffle);$('rp').classList.toggle('on',rep>0);$('rp').textContent=rep===2?'🔂':'🔁'}
+function modeUi(){$('sh').innerHTML=ic('shuffle');$('sh').classList.toggle('on',shuffle);$('rp').innerHTML=ic(rep===2?'repeat1':'repeat');$('rp').classList.toggle('on',rep>0)}
 function playMixed(){shuffle=true;modeUi();const n=lib.length?'lib':'chart';playFrom(n,Math.floor(Math.random()*listOf(n).length));openFull()}
 function openFull(){$('full-player').classList.add('active')}
 function closeFull(){$('full-player').classList.remove('active')}
@@ -323,5 +365,5 @@ audio.ontimeupdate=()=>{
 };
 function seekAudio(v){if(audio.duration)audio.currentTime=v/100*audio.duration}
 function fmt(s){const m=Math.floor(s/60),r=Math.floor(s%60);return m+":"+(r<10?"0":"")+r}
-renderAll();modeUi();handleAdd();
+renderAll();modeUi();btns();handleAdd();
 </script></body></html>
