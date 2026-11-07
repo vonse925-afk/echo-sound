@@ -1,399 +1,219 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Echo Sound</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg: #030307;
-      --glass-bg: rgba(255, 255, 255, 0.04);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --glass-highlight: rgba(255, 255, 255, 0.22);
-      --ac: #a855f7;
-      --ac-glow: rgba(168, 85, 247, 0.7);
-      --tx: #ffffff;
-      --mu: rgba(255, 255, 255, 0.5);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--tx); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; height: 100vh; position: relative; }
-
-    /* Плавающий фоновый анимированный градиент */
-    .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; pointer-events: none; }
-    .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.45; animation: float 16s infinite alternate ease-in-out; }
-    .blob-1 { width: 320px; height: 320px; background: #6366f1; top: -100px; left: -100px; }
-    .blob-2 { width: 380px; height: 380px; background: #a855f7; bottom: -50px; right: -100px; animation-delay: -5s; }
-    .blob-3 { width: 260px; height: 260px; background: #ec4899; top: 35%; left: 25%; animation-delay: -9s; }
-
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(45px, 60px) scale(1.2); }
-      100% { transform: translate(-30px, 35px) scale(0.85); }
-    }
-
-    /* Эффект жидкого стекла */
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(35px);
-      -webkit-backdrop-filter: blur(35px);
-      border: 1px solid var(--glass-border);
-      border-top: 1px solid var(--glass-highlight);
-      box-shadow: 0 20px 45px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
-      border-radius: 26px;
-    }
-
-    .app-container { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; }
-    
-    /* Большой отступ снизу, чтобы мини-плеер не перекрывал последние карточки */
-    .screen { display: none; padding: 18px 18px 140px 18px; overflow-y: auto; height: 100%; animation: fadeIn 0.25s ease; }
-    .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Шапка */
-    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .user-info { display: flex; align-items: center; gap: 12px; }
-    .ava { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid var(--glass-highlight); box-shadow: 0 0 15px var(--ac-glow); }
-    .greeting small { color: var(--mu); font-size: 12px; }
-    .greeting h3 { font-size: 16px; font-weight: 600; }
-
-    /* Баннер */
-    .banner { padding: 22px; margin-bottom: 24px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.08)); }
-    .banner:active { transform: scale(0.98); }
-    .banner h2 { font-size: 22px; margin-bottom: 6px; text-shadow: 0 2px 12px rgba(139, 92, 246, 0.6); }
-    .banner p { color: var(--mu); font-size: 13px; }
-
-    .section-title { font-size: 18px; font-weight: 600; margin: 18px 0 12px 0; letter-spacing: 0.3px; }
-    
-    /* Карточки */
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .track-card { padding: 12px; transition: transform 0.2s; cursor: pointer; }
-    .track-card:active { transform: scale(0.96); }
-    .cover-box { width: 100%; aspect-ratio: 1; border-radius: 18px; margin-bottom: 10px; background-size: cover; background-position: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
-    .track-card h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-    .track-card p { font-size: 12px; color: var(--mu); margin-top: 2px; }
-
-    /* Мини-плеер */
-    .mini-player { position: fixed; bottom: 84px; left: 14px; right: 14px; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; cursor: pointer; backdrop-filter: blur(35px); background: rgba(15, 12, 28, 0.75); border: 1px solid rgba(139, 92, 246, 0.35); box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 25px rgba(139, 92, 246, 0.2); }
-    .mini-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
-    .mini-cover { width: 44px; height: 44px; border-radius: 12px; background-size: cover; border: 1px solid var(--glass-border); flex-shrink: 0; }
-    .mini-text h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mini-text p { font-size: 12px; color: var(--mu); }
-    .play-btn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--ac-glow); cursor: pointer; }
-
-    /* Нижняя навигация */
-    .nav-bar { position: fixed; bottom: 12px; left: 14px; right: 14px; height: 62px; display: flex; justify-content: space-around; align-items: center; z-index: 9; background: rgba(8, 8, 14, 0.9); backdrop-filter: blur(30px); }
-    .nav-btn { background: none; border: none; color: var(--mu); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; transition: color 0.2s; }
-    .nav-btn.active { color: #fff; text-shadow: 0 0 12px var(--ac-glow); }
-    .nav-btn svg { width: 22px; height: 22px; fill: currentColor; }
-
-    /* Полноэкранный плеер */
-    .full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1f113a 0%, #030307 85%); z-index: 100; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between; }
-    .full-player.active { transform: translateY(0); }
-    
-    .full-header { display: flex; justify-content: space-between; align-items: center; }
-    .header-title { font-size: 12px; letter-spacing: 2px; color: var(--mu); text-transform: uppercase; font-weight: 600; }
-    
-    .full-cover-container { position: relative; width: 85%; max-width: 280px; aspect-ratio: 1; margin: 0 auto; }
-    .full-cover-glow { position: absolute; inset: -15px; border-radius: 40px; background: linear-gradient(135deg, #a855f7, #3b82f6, #ec4899); filter: blur(35px); opacity: 0.6; animation: glowPulse 5s infinite alternate ease-in-out; }
-    @keyframes glowPulse { 0% { transform: scale(0.9); opacity: 0.4; } 100% { transform: scale(1.1); opacity: 0.75; } }
-    
-    .full-cover { width: 100%; height: 100%; border-radius: 30px; background-size: cover; background-position: center; border: 1px solid var(--glass-highlight); box-shadow: 0 30px 60px rgba(0,0,0,0.8); position: relative; z-index: 2; }
-
-    .track-details { text-align: center; }
-    .track-details h2 { font-size: 22px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-details p { color: var(--mu); font-size: 14px; margin-top: 4px; }
-
-    /* Эквалайзер */
-    .eq-bars { display: flex; gap: 5px; justify-content: center; height: 22px; align-items: flex-end; margin: 8px 0; }
-    .eq-bar { width: 4px; background: #a855f7; border-radius: 3px; animation: eqAnim 0.7s infinite alternate ease-in-out; box-shadow: 0 0 10px var(--ac-glow); }
-    .eq-bar:nth-child(1) { animation-delay: -0.1s; height: 8px; }
-    .eq-bar:nth-child(2) { animation-delay: -0.3s; height: 20px; }
-    .eq-bar:nth-child(3) { animation-delay: -0.5s; height: 13px; }
-    .eq-bar:nth-child(4) { animation-delay: -0.2s; height: 22px; }
-    .eq-bar:nth-child(5) { animation-delay: -0.4s; height: 10px; }
-    @keyframes eqAnim { 0% { height: 6px; } 100% { height: 22px; } }
-
-    /* Премиальный слайдер с неоновым следом (трейлом) */
-    .player-controls-area { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; backdrop-filter: blur(20px); }
-    .progress-container { width: 100%; margin-bottom: 15px; }
-    
-    .seek-slider {
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      border-radius: 3px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.15);
-      /* Динамический трейл будет управляться через JS градиентом */
-    }
-    
-    /* Кастомный светящийся бегунок */
-    .seek-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #ffffff;
-      box-shadow: 0 0 14px var(--ac), 0 0 6px #ffffff, inset 0 0 4px var(--ac);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .seek-slider::-webkit-slider-thumb:active {
-      transform: scale(1.35);
-    }
-
-    .time-codes { display: flex; justify-content: space-between; font-size: 12px; color: var(--mu); margin-top: 6px; }
-
-    .main-controls { display: flex; justify-content: space-around; align-items: center; }
-    .ctrl-btn { background: none; border: none; color: white; cursor: pointer; font-size: 26px; opacity: 0.85; transition: transform 0.15s, opacity 0.15s; }
-    .ctrl-btn:active { transform: scale(0.9); opacity: 1; }
-  </style>
-</head>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Echo Sound</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#030307;--glass-bg:rgba(255,255,255,.04);--glass-border:rgba(255,255,255,.1);--glass-highlight:rgba(255,255,255,.22);--ac:#a855f7;--ac-glow:rgba(168,85,247,.7);--tx:#fff;--mu:rgba(255,255,255,.5)}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden;height:100vh;position:relative}
+.bg-blobs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.45;animation:float 16s infinite alternate ease-in-out}
+.blob-1{width:320px;height:320px;background:#6366f1;top:-100px;left:-100px}
+.blob-2{width:380px;height:380px;background:#a855f7;bottom:-50px;right:-100px;animation-delay:-5s}
+.blob-3{width:260px;height:260px;background:#ec4899;top:35%;left:25%;animation-delay:-9s}
+@keyframes float{0%{transform:translate(0,0) scale(1)}50%{transform:translate(45px,60px) scale(1.2)}100%{transform:translate(-30px,35px) scale(.85)}}
+.glass-card{background:var(--glass-bg);backdrop-filter:blur(35px);-webkit-backdrop-filter:blur(35px);border:1px solid var(--glass-border);border-top:1px solid var(--glass-highlight);box-shadow:0 20px 45px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12);border-radius:26px}
+.app-container{position:relative;z-index:1;height:100vh}
+.screen{display:none;padding:18px 18px 150px;overflow-y:auto;height:100%;animation:fadeIn .25s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.top-bar{display:flex;align-items:center;margin-bottom:20px}
+.user-info{display:flex;align-items:center;gap:12px}
+.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);display:flex;align-items:center;justify-content:center;font-weight:bold;border:1.5px solid var(--glass-highlight);box-shadow:0 0 15px var(--ac-glow)}
+.greeting small{color:var(--mu);font-size:12px}.greeting h3{font-size:16px;font-weight:600}
+.banner{padding:22px;margin-bottom:24px;cursor:pointer;transition:transform .2s;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(59,130,246,.08))}
+.banner:active{transform:scale(.98)}
+.banner h2{font-size:22px;margin-bottom:6px;text-shadow:0 2px 12px rgba(139,92,246,.6)}.banner p{color:var(--mu);font-size:13px}
+.section-title{font-size:18px;font-weight:600;margin:18px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.empty{grid-column:1/-1;color:var(--mu);text-align:center;padding:30px 0;font-size:14px}
+.track-card{padding:12px;transition:transform .2s;cursor:pointer;position:relative}
+.track-card:active{transform:scale(.96)}
+.cover-box{width:100%;aspect-ratio:1;border-radius:18px;margin-bottom:10px;background-size:cover;background-position:center;background-color:#1a1530;border:1px solid var(--glass-border);box-shadow:0 10px 25px rgba(0,0,0,.4)}
+.track-card h4{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.track-card p{font-size:12px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heart{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;font-size:17px;backdrop-filter:blur(8px)}
+.heart.on{color:#ec4899}
+.mini-player{position:fixed;bottom:84px;left:14px;right:14px;height:64px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;z-index:10;cursor:pointer;background:rgba(15,12,28,.75);border:1px solid rgba(139,92,246,.35);box-shadow:0 15px 35px rgba(0,0,0,.7),0 0 25px rgba(139,92,246,.2)}
+.mini-info{display:flex;align-items:center;gap:12px;overflow:hidden}
+.mini-cover{width:44px;height:44px;border-radius:12px;background-size:cover;background-position:center;border:1px solid var(--glass-border);flex-shrink:0}
+.mini-text{overflow:hidden}.mini-text h4{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-text p{font-size:12px;color:var(--mu)}
+.play-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--ac-glow);cursor:pointer;flex-shrink:0}
+.nav-bar{position:fixed;bottom:12px;left:14px;right:14px;height:62px;display:flex;justify-content:space-around;align-items:center;z-index:9;background:rgba(8,8,14,.9)}
+.nav-btn{background:none;border:none;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;cursor:pointer;transition:color .2s}
+.nav-btn.active{color:#fff;text-shadow:0 0 12px var(--ac-glow)}
+.nav-btn svg{width:22px;height:22px;fill:currentColor}
+.full-player{position:fixed;inset:0;background:radial-gradient(circle at 50% 20%,#1f113a 0%,#030307 85%);z-index:100;transform:translateY(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);padding:28px 24px;display:flex;flex-direction:column;justify-content:space-between}
+.full-player.active{transform:none}
+.full-header{display:flex;justify-content:space-between;align-items:center}
+.header-title{font-size:12px;letter-spacing:2px;color:var(--mu);text-transform:uppercase;font-weight:600}
+.full-cover-container{position:relative;width:85%;max-width:280px;aspect-ratio:1;margin:0 auto}
+.full-cover-glow{position:absolute;inset:-15px;border-radius:40px;background:linear-gradient(135deg,#a855f7,#3b82f6,#ec4899);filter:blur(35px);opacity:.6;animation:glowPulse 5s infinite alternate ease-in-out}
+@keyframes glowPulse{0%{transform:scale(.9);opacity:.4}100%{transform:scale(1.1);opacity:.75}}
+.full-cover{width:100%;height:100%;border-radius:30px;background-size:cover;background-position:center;background-color:#1a1530;border:1px solid var(--glass-highlight);box-shadow:0 30px 60px rgba(0,0,0,.8);position:relative;z-index:2}
+.track-details{text-align:center}
+.track-details h2{font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-details p{color:var(--mu);font-size:14px;margin-top:4px}
+.eq-bars{display:flex;gap:5px;justify-content:center;height:22px;align-items:flex-end;margin:8px 0}
+.eq-bar{width:4px;background:#a855f7;border-radius:3px;animation:eqAnim .7s infinite alternate ease-in-out;box-shadow:0 0 10px var(--ac-glow)}
+.eq-bar:nth-child(1){animation-delay:-.1s}.eq-bar:nth-child(2){animation-delay:-.3s}.eq-bar:nth-child(3){animation-delay:-.5s}.eq-bar:nth-child(4){animation-delay:-.2s}.eq-bar:nth-child(5){animation-delay:-.4s}
+.eq-bars.paused .eq-bar{animation-play-state:paused}
+@keyframes eqAnim{0%{height:6px}100%{height:22px}}
+.player-controls-area{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:24px;padding:18px;backdrop-filter:blur(20px)}
+.progress-container{width:100%;margin-bottom:15px}
+.seek-slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;background:rgba(255,255,255,.15)}
+.seek-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 14px var(--ac),0 0 6px #fff;cursor:pointer}
+.time-codes{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-top:6px}
+.main-controls{display:flex;justify-content:space-around;align-items:center}
+.ctrl-btn{background:none;border:none;color:#fff;cursor:pointer;font-size:26px;opacity:.85}
+.ctrl-btn:active{transform:scale(.9);opacity:1}
+.search-input{width:100%;padding:14px;color:#fff;outline:none;margin-bottom:15px;font-size:16px}
+</style></head>
 <body>
+<div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
 
-  <div class="bg-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+<div class="app-container">
+  <div id="screen-home" class="screen active">
+    <div class="top-bar"><div class="user-info"><div class="ava" id="user-ava">E</div>
+      <div class="greeting"><small id="time-greeting">Добрый день</small><h3 id="user-name">Слушатель</h3></div></div></div>
+    <div class="glass-card banner" onclick="playMixed()"><h2>⚡ Твой микс</h2><p>Случайные треки из твоей медиатеки. Нажми, чтобы запустить</p></div>
+    <div class="section-title">Чарт треков</div>
+    <div class="grid" id="chart-grid"></div>
   </div>
 
-  <div class="app-container">
-    <!-- ГЛАВНАЯ -->
-    <div id="screen-home" class="screen active">
-      <div class="top-bar">
-        <div class="user-info">
-          <div class="ava" id="user-ava">E</div>
-          <div class="greeting">
-            <small id="time-greeting">Добрый день</small>
-            <h3 id="user-name">Слушатель</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card banner" onclick="playMixedTracks()">
-        <h2>⚡ Твой микс</h2>
-        <p>Подобрено в стиле Ultra Indigo. Нажми, чтобы запустить</p>
-      </div>
-
-      <div class="section-title">Чарт треков</div>
-      <div class="grid" id="chart-grid"></div>
-    </div>
-
-    <!-- ПОИСК -->
-    <div id="screen-search" class="screen">
-      <div class="section-title">Поиск музыки</div>
-      <input type="text" id="search-input" placeholder="Введите название трека..." class="glass-card" style="width:100%; padding:14px; color:#fff; outline:none; margin-bottom:15px; border:1px solid var(--glass-border);" oninput="filterTracks(this.value)">
-      <div class="grid" id="search-grid"></div>
-    </div>
-
-    <!-- МЕДИАТЕКА -->
-    <div id="screen-library" class="screen">
-      <div class="section-title">📁 Медиатека</div>
-      <p style="color:var(--mu); font-size:13px; margin-bottom:15px;">Ваши сохраненные и любимые треки</p>
-      <div class="grid" id="library-grid"></div>
-    </div>
-
-    <!-- МИНИ-ПЛЕЕР -->
-    <div class="glass-card mini-player" id="mini-player" onclick="openFullPlayer()">
-      <div class="mini-info">
-        <div class="mini-cover" id="mini-cover" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400')"></div>
-        <div class="mini-text">
-          <h4 id="mini-title">Выберите трек</h4>
-          <p id="mini-artist">Echo Sound</p>
-        </div>
-      </div>
-      <button class="play-btn" onclick="event.stopPropagation(); togglePlay();">▶</button>
-    </div>
-
-    <!-- НИЖНЯЯ ПАНЕЛЬ -->
-    <div class="glass-card nav-bar">
-      <button class="nav-btn active" onclick="switchTab('home', this)">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        Главная
-      </button>
-      <button class="nav-btn" onclick="switchTab('search', this)">
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        Поиск
-      </button>
-      <button class="nav-btn" onclick="switchTab('library', this)">
-        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
-        Медиатека
-      </button>
-    </div>
+  <div id="screen-search" class="screen">
+    <div class="section-title">Поиск музыки</div>
+    <input type="text" id="search-input" placeholder="Название или исполнитель..." class="glass-card search-input" autocomplete="off" oninput="onSearchInput(this.value)">
+    <div class="grid" id="search-grid"><div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div></div>
   </div>
 
-  <!-- ПОЛНОЭКРАННЫЙ ПЛЕЕР -->
-  <div class="full-player" id="full-player">
-    <div class="full-header">
-      <button class="ctrl-btn" style="font-size: 20px;" onclick="closeFullPlayer()">✕</button>
-      <span class="header-title">Сейчас играет</span>
-      <div style="width:20px;"></div>
-    </div>
-
-    <div class="full-cover-container">
-      <div class="full-cover-glow"></div>
-      <div class="full-cover" id="full-cover" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400')"></div>
-    </div>
-
-    <div class="track-details">
-      <h2 id="full-title">Ultra Indigo</h2>
-      <p id="full-artist">Echo Sound</p>
-      
-      <div class="eq-bars">
-        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
-      </div>
-    </div>
-
-    <div class="player-controls-area">
-      <div class="progress-container">
-        <input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
-        <div class="time-codes">
-          <span id="current-time">0:00</span>
-          <span id="total-duration">0:00</span>
-        </div>
-      </div>
-
-      <div class="main-controls">
-        <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
-        <button class="play-btn" style="width:68px; height:68px; font-size:26px;" onclick="togglePlay()">▶</button>
-        <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
-      </div>
-    </div>
+  <div id="screen-library" class="screen">
+    <div class="section-title">📁 Медиатека</div>
+    <p style="color:var(--mu);font-size:13px;margin-bottom:15px">Нажми ♥ у трека, чтобы сохранить сюда</p>
+    <div class="grid" id="library-grid"></div>
   </div>
 
-  <audio id="audio-player"></audio>
+  <div class="glass-card mini-player" id="mini-player" onclick="openFull()">
+    <div class="mini-info"><div class="mini-cover" id="mini-cover"></div>
+      <div class="mini-text"><h4 id="mini-title">Выберите трек</h4><p id="mini-artist">Echo Sound</p></div></div>
+    <button class="play-btn" onclick="event.stopPropagation();togglePlay()">▶</button>
+  </div>
 
-  <script>
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      if (tg.initDataUnsafe?.user) {
-        document.getElementById('user-name').textContent = tg.initDataUnsafe.user.first_name;
-        document.getElementById('user-ava').textContent = tg.initDataUnsafe.user.first_name[0];
-      }
-    }
+  <div class="glass-card nav-bar">
+    <button class="nav-btn active" onclick="switchTab('home',this)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Главная</button>
+    <button class="nav-btn" onclick="switchTab('search',this)"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Поиск</button>
+    <button class="nav-btn" onclick="switchTab('library',this)"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>Медиатека</button>
+  </div>
+</div>
 
-    const tracks = [
-      { id: 1, title: "Ultra Indigo", artist: "Echo Sound", cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-      { id: 2, title: "Neon Drive", artist: "Midnight City", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-      { id: 3, title: "Velvet Sky", artist: "Luna Phase", cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
-      { id: 4, title: "Deep Blue", artist: "Sub Zero", cover: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" }
-    ];
+<div class="full-player" id="full-player">
+  <div class="full-header"><button class="ctrl-btn" style="font-size:20px" onclick="closeFull()">✕</button><span class="header-title">Сейчас играет</span><div style="width:20px"></div></div>
+  <div class="full-cover-container"><div class="full-cover-glow"></div><div class="full-cover" id="full-cover"></div></div>
+  <div class="track-details"><h2 id="full-title">Echo Sound</h2><p id="full-artist">Выберите трек</p>
+    <div class="eq-bars paused" id="eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div></div>
+  <div class="player-controls-area">
+    <div class="progress-container"><input type="range" class="seek-slider" id="seek-slider" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
+      <div class="time-codes"><span id="current-time">0:00</span><span id="total-duration">0:00</span></div></div>
+    <div class="main-controls"><button class="ctrl-btn" onclick="step(-1)">⏮</button>
+      <button class="play-btn" style="width:68px;height:68px;font-size:26px" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="step(1)">⏭</button></div>
+  </div>
+</div>
+<audio id="audio-player"></audio>
 
-    let currentTrackIdx = 0;
-    const audio = document.getElementById('audio-player');
+<script>
+const $=id=>document.getElementById(id);
+const APP="EchoSound",FALLBACK="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();const u=tg.initDataUnsafe?.user;if(u){$('user-name').textContent=u.first_name;$('user-ava').textContent=u.first_name[0]}}
+const h=new Date().getHours();
+$('time-greeting').textContent=h<6?"Доброй ночи":h<12?"Доброе утро":h<18?"Добрый день":"Добрый вечер";
 
-    function renderGrids() {
-      const chartGrid = document.getElementById('chart-grid');
-      const searchGrid = document.getElementById('search-grid');
-      const libraryGrid = document.getElementById('library-grid');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const demo=[
+ ["Ultra Indigo","Echo Sound","photo-1618005182384-a83a8bd57fbe"],["Neon Drive","Midnight City","photo-1508700115892-45ecd05ae2ad"],
+ ["Velvet Sky","Luna Phase","photo-1518709268805-4e9042af9f23"],["Deep Blue","Sub Zero","photo-1550684848-fac1c5b4e853"]
+].map((d,i)=>({id:"d"+i,title:d[0],artist:d[1],cover:"https://images.unsplash.com/"+d[2]+"?w=400",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-"+(i+1)+".mp3",src:"demo"}));
 
-      const html = tracks.map((t, idx) => `
-        <div class="glass-card track-card" onclick="playTrack(${idx})">
-          <div class="cover-box" style="background-image:url('${t.cover}')"></div>
-          <h4>${t.title}</h4>
-          <p>${t.artist}</p>
-        </div>
-      `).join('');
+let lib=[];try{lib=JSON.parse(localStorage.getItem("lib"))||[]}catch(e){}
+const saveLib=()=>{try{localStorage.setItem("lib",JSON.stringify(lib))}catch(e){}};
+let results=[],queue=[],qi=0;
+const audio=$('audio-player');
+const L=n=>({chart:demo,search:results,lib:lib}[n]);
+const saved=t=>lib.some(x=>x.id===t.id);
 
-      chartGrid.innerHTML = html;
-      searchGrid.innerHTML = html;
-      libraryGrid.innerHTML = html;
-    }
+function card(t,n,i){
+  const tag=t.src==="itunes"?" · превью 30с":"";
+  return `<div class="glass-card track-card" onclick="playFrom('${n}',${i})">
+    <div class="cover-box" style="background-image:url('${esc(t.cover)}')"></div>
+    <button class="heart ${saved(t)?"on":""}" onclick="event.stopPropagation();like('${n}',${i})">${saved(t)?"♥":"♡"}</button>
+    <h4>${esc(t.title)}</h4><p>${esc(t.artist)}${tag}</p></div>`;
+}
+function renderAll(){
+  $('chart-grid').innerHTML=demo.map((t,i)=>card(t,'chart',i)).join('');
+  $('library-grid').innerHTML=lib.length?lib.map((t,i)=>card(t,'lib',i)).join(''):'<div class="empty">Пока пусто. Найди трек в поиске и нажми ♡</div>';
+  renderSearch();
+}
+function renderSearch(){
+  if(results.length)$('search-grid').innerHTML=results.map((t,i)=>card(t,'search',i)).join('');
+}
+function like(n,i){
+  const t=L(n)[i];
+  lib=saved(t)?lib.filter(x=>x.id!==t.id):[t,...lib];
+  saveLib();renderAll();
+  tg?.HapticFeedback?.impactOccurred("light");
+}
 
-    function playTrack(idx) {
-      currentTrackIdx = idx;
-      const t = tracks[idx];
-      audio.src = t.url;
-      audio.play();
+/* Поиск */
+async function searchAudius(q){
+  const r=await fetch(`https://api.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&limit=15&app_name=${APP}`);
+  const j=await r.json();
+  return (j.data||[]).map(x=>({id:"a"+x.id,title:x.title,artist:x.user?.name||"Audius",cover:x.artwork?.["480x480"]||FALLBACK,url:`https://api.audius.co/v1/tracks/${x.id}/stream?app_name=${APP}`,src:"audius"}));
+}
+async function searchItunes(q){
+  const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=15`);
+  const j=await r.json();
+  return (j.results||[]).filter(x=>x.previewUrl).map(x=>({id:"i"+x.trackId,title:x.trackName,artist:x.artistName,cover:(x.artworkUrl100||"").replace("100x100","400x400")||FALLBACK,url:x.previewUrl,src:"itunes"}));
+}
+let timer,ticket=0;
+function onSearchInput(v){clearTimeout(timer);timer=setTimeout(()=>doSearch(v),450)}
+async function doSearch(q){
+  q=q.trim();const my=++ticket;
+  if(!q){results=[];$('search-grid').innerHTML='<div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div>';return}
+  $('search-grid').innerHTML='<div class="empty">Ищу…</div>';
+  const [a,i]=await Promise.allSettled([searchAudius(q),searchItunes(q)]);
+  if(my!==ticket)return;
+  results=[...(a.value||[]),...(i.value||[])];
+  if(results.length)renderSearch();else $('search-grid').innerHTML='<div class="empty">Ничего не найдено</div>';
+}
 
-      updatePlayerUI(t);
-    }
-
-    function updatePlayerUI(t) {
-      document.getElementById('mini-cover').style.backgroundImage = `url('${t.cover}')`;
-      document.getElementById('mini-title').textContent = t.title;
-      document.getElementById('mini-artist').textContent = t.artist;
-      document.querySelectorAll('.play-btn').forEach(btn => btn.textContent = '❚❚');
-
-      document.getElementById('full-cover').style.backgroundImage = `url('${t.cover}')`;
-      document.getElementById('full-title').textContent = t.title;
-      document.getElementById('full-artist').textContent = t.artist;
-    }
-
-    function togglePlay() {
-      if (!audio.src) { playTrack(0); return; }
-      if (audio.paused) {
-        audio.play();
-        document.querySelectorAll('.play-btn').forEach(btn => btn.textContent = '❚❚');
-      } else {
-        audio.pause();
-        document.querySelectorAll('.play-btn').forEach(btn => btn.textContent = '▶');
-      }
-    }
-
-    function playMixedTracks() {
-      const randomIdx = Math.floor(Math.random() * tracks.length);
-      playTrack(randomIdx);
-      openFullPlayer();
-    }
-
-    function openFullPlayer() { document.getElementById('full-player').classList.add('active'); }
-    function closeFullPlayer() { document.getElementById('full-player').classList.remove('active'); }
-    function prevTrack() { playTrack((currentTrackIdx - 1 + tracks.length) % tracks.length); }
-    function nextTrack() { playTrack((currentTrackIdx + 1) % tracks.length); }
-
-    function switchTab(tab, btn) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`screen-${tab}`).classList.add('active');
-      btn.classList.add('active');
-    }
-
-    function filterTracks(query) {
-      const filtered = tracks.filter(t => t.title.toLowerCase().includes(query.toLowerCase()) || t.artist.toLowerCase().includes(query.toLowerCase()));
-      document.getElementById('search-grid').innerHTML = filtered.map((t, idx) => `
-        <div class="glass-card track-card" onclick="playTrack(${tracks.indexOf(t)})">
-          <div class="cover-box" style="background-image:url('${t.cover}')"></div>
-          <h4>${t.title}</h4>
-          <p>${t.artist}</p>
-        </div>
-      `).join('');
-    }
-
-    // Обновление таймлайна, времени и неонового трейла за бегунком
-    audio.ontimeupdate = () => {
-      if (audio.duration) {
-        const slider = document.getElementById('seek-slider');
-        const percent = (audio.currentTime / audio.duration) * 100;
-        
-        slider.value = percent;
-        // Создаем эффект заполненного следа (трейла) слева от ползунка
-        slider.style.background = `linear-gradient(to right, #a855f7 ${percent}%, rgba(255, 255, 255, 0.15) ${percent}%)`;
-        
-        document.getElementById('current-time').textContent = formatTime(audio.currentTime);
-        document.getElementById('total-duration').textContent = formatTime(audio.duration);
-      }
-    };
-
-    function seekAudio(val) {
-      if (audio.duration) {
-        audio.currentTime = (val / 100) * audio.duration;
-      }
-    }
-
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    renderGrids();
-  </script>
-</body>
-</html>
+/* Плеер */
+function playFrom(n,i){queue=L(n).slice();qi=i;load()}
+function load(){const t=queue[qi];if(!t)return;audio.src=t.url;audio.play().catch(()=>{});ui(t)}
+function ui(t){
+  $('mini-cover').style.backgroundImage=$('full-cover').style.backgroundImage=`url('${t.cover}')`;
+  $('mini-title').textContent=$('full-title').textContent=t.title;
+  $('mini-artist').textContent=$('full-artist').textContent=t.artist;
+}
+function btns(){const p=audio.paused;document.querySelectorAll('.play-btn').forEach(b=>b.textContent=p?'▶':'❚❚');$('eq').classList.toggle('paused',p)}
+audio.onplay=btns;audio.onpause=btns;audio.onended=()=>step(1);
+function togglePlay(){if(!audio.src){playFrom('chart',0);return}audio.paused?audio.play():audio.pause()}
+function step(d){if(!queue.length)return;qi=(qi+d+queue.length)%queue.length;load()}
+function playMixed(){const src=lib.length?lib:demo;playFrom(lib.length?'lib':'chart',Math.floor(Math.random()*src.length));openFull()}
+function openFull(){$('full-player').classList.add('active')}
+function closeFull(){$('full-player').classList.remove('active')}
+function switchTab(t,b){
+  document.querySelectorAll('.screen,.nav-btn').forEach(x=>x.classList.remove('active'));
+  $('screen-'+t).classList.add('active');b.classList.add('active');
+}
+audio.ontimeupdate=()=>{
+  if(!audio.duration)return;
+  const p=audio.currentTime/audio.duration*100,s=$('seek-slider');
+  s.value=p;s.style.background=`linear-gradient(to right,#a855f7 ${p}%,rgba(255,255,255,.15) ${p}%)`;
+  $('current-time').textContent=fmt(audio.currentTime);$('total-duration').textContent=fmt(audio.duration);
+};
+function seekAudio(v){if(audio.duration)audio.currentTime=v/100*audio.duration}
+function fmt(s){const m=Math.floor(s/60),r=Math.floor(s%60);return m+":"+(r<10?"0":"")+r}
+renderAll();
+</script></body></html>
