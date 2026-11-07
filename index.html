@@ -101,7 +101,7 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .row .ic{background:none;border:0;color:var(--mu);padding:8px;display:flex}
 .row .ic.on{color:#ec4899}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#6b7280;flex-shrink:0}
-.dot.audius{background:#a855f7}.dot.itunes{background:#fa2d48}
+.dot.echo{background:#22d3ee}.dot.audius{background:#a855f7}.dot.itunes{background:#fa2d48}
 .chips{display:flex;gap:8px;margin-bottom:14px}
 .chip{padding:8px 16px;border-radius:14px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--tx);font-size:14px}
 .chip.on{background:rgba(168,85,247,.25);border-color:rgba(168,85,247,.7);box-shadow:0 0 14px rgba(168,85,247,.35)}
@@ -114,14 +114,14 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
     <div class="top-bar"><div class="user-info"><div class="ava" id="user-ava">E</div>
       <div class="greeting"><small id="time-greeting">Добрый день</small><h3 id="user-name">Слушатель</h3></div></div></div>
     <div class="glass-card banner" onclick="playMixed()"><h2 style="display:flex;align-items:center;gap:8px"><svg class="i f" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg> Твой микс</h2><p>Случайные треки из твоей медиатеки. Нажми, чтобы запустить</p></div>
-    <div class="section-title">Чарт треков</div>
+    <div class="section-title">Новое в Echo Sound</div>
     <div class="list" id="chart-grid"></div>
   </div>
 
   <div id="screen-search" class="screen">
     <div class="section-title">Поиск музыки</div>
     <input type="text" id="search-input" placeholder="Название или исполнитель..." class="glass-card search-input" autocomplete="off" oninput="onSearchInput(this.value)">
-    <div class="chips"><button class="chip on" onclick="setF('all',this)">Все</button><button class="chip" onclick="setF('audius',this)">Audius</button><button class="chip" onclick="setF('itunes',this)">iTunes</button></div>
+    <div class="chips"><button class="chip on" onclick="setF('all',this)">Все</button><button class="chip" onclick="setF('echo',this)">Echo</button><button class="chip" onclick="setF('audius',this)">Audius</button><button class="chip" onclick="setF('itunes',this)">iTunes</button></div>
     <div class="list" id="search-grid"><div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div></div>
   </div>
 
@@ -198,23 +198,26 @@ const IC={
 };
 const ic=(n,f)=>`<svg class="i${f?" f":""}" viewBox="0 0 24 24">${IC[n]}</svg>`;
 let filt="all";
+const API="";   // адрес Cloudflare Worker, например https://echo.xxx.workers.dev
+let chartList=demo;
+const bg=t=>t.cover?`url('${esc(t.cover)}')`:grad(t.title);
 function fl(){return results.filter(t=>filt==="all"||t.src===filt)}
 const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast("Не хватило памяти")}};
 let lib=ld("lib",[]),pls=ld("pls",[]),results=[],queue=[],qi=0,curPl=null,pend=null,shuffle=false,rep=0;
 const audio=$('audio-player');
-const listOf=n=>({chart:demo,search:fl(),lib:lib,pl:curPl?curPl.tracks:[]}[n]);
+const listOf=n=>({chart:chartList,search:fl(),lib:lib,pl:curPl?curPl.tracks:[]}[n]);
 const saved=t=>lib.some(x=>x.id===t.id);
 function grad(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return `linear-gradient(135deg,hsl(${h},70%,45%),hsl(${(h+60)%360},70%,25%))`}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
 
 /* Карточки */
 function row(t,n,i){
-  const src=t.src==="audius"?"Audius":t.src==="itunes"?"iTunes · превью 30с":"Демо";
+  const src=t.src==="echo"?"Echo Sound":t.src==="audius"?"Audius":t.src==="itunes"?"iTunes · превью 30с":"Демо";
   const act=n==='pl'
     ?`<button class="ic" onclick="event.stopPropagation();rmFromPl(${i})">${ic('x')}</button>`
     :`<button class="ic" onclick="event.stopPropagation();pickPl('${n}',${i})">${ic('plus')}</button><button class="ic ${saved(t)?'on':''}" onclick="event.stopPropagation();like('${n}',${i})">${ic('heart',saved(t))}</button>`;
-  return `<div class="row" onclick="playFrom('${n}',${i})"><div class="th" style="background-image:url('${esc(t.cover)}')"></div><div class="tx"><b>${esc(t.title)}</b><span><i class="dot ${t.src}"></i>${src} · ${esc(t.artist)}</span></div>${act}</div>`;
+  return `<div class="row" onclick="playFrom('${n}',${i})"><div class="th" style="background-image:${bg(t)}"></div><div class="tx"><b>${esc(t.title)}</b><span><i class="dot ${t.src}"></i>${src} · ${esc(t.artist)}</span></div>${act}</div>`;
 }
 function plCard(p){
   return `<div class="glass-card track-card" onclick="openPl('${p.id}')">
@@ -222,7 +225,7 @@ function plCard(p){
     <h4>${esc(p.name)}</h4><p>${p.tracks.length} треков</p></div>`;
 }
 function renderAll(){
-  $('chart-grid').innerHTML=demo.map((t,i)=>row(t,'chart',i)).join('');
+  $('chart-grid').innerHTML=chartList.map((t,i)=>row(t,'chart',i)).join('');
   $('pl-grid').innerHTML=`<div class="glass-card track-card" onclick="newPl()"><div class="cover-box" style="display:flex;align-items:center;justify-content:center;color:var(--mu)">${ic('plus')}</div><h4>Новый плейлист</h4><p>Создать</p></div>`+pls.map(plCard).join('');
   $('library-grid').innerHTML=lib.length?lib.map((t,i)=>row(t,'lib',i)).join(''):'<div class="empty">Пока пусто. Найди трек и нажми на сердце</div>';
   renderSearch();renderPl();
@@ -300,7 +303,18 @@ const audMap=x=>({id:"a"+x.id,title:x.title,artist:x.user?.name||"Audius",cover:
 const itnMap=x=>({id:"i"+x.trackId,title:x.trackName,artist:x.artistName,cover:(x.artworkUrl100||"").replace("100x100","400x400")||FALLBACK,url:x.previewUrl,src:"itunes"});
 async function searchAudius(q){const j=await(await fetch(`https://api.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&limit=15&app_name=${APP}`)).json();return(j.data||[]).map(audMap)}
 async function searchItunes(q){const j=await(await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=15`)).json();return(j.results||[]).filter(x=>x.previewUrl).map(itnMap)}
+const stMap=x=>({id:"e"+x.uid,title:x.title,artist:x.artist,cover:"",url:API+"/audio/"+x.uid,src:"echo"});
+async function searchStore(q){
+  if(!API||!tg?.initData)return[];
+  const r=await fetch(API+"/api/search?q="+encodeURIComponent(q),{headers:{"X-Init-Data":tg.initData}});
+  const j=await r.json();
+  return(j.tracks||[]).map(stMap);
+}
+async function loadChart(){
+  try{const l=await searchStore("");if(l.length){chartList=l;renderAll()}}catch(e){}
+}
 async function resolve(id){
+  if(id[0]==="e"){const j=await(await fetch(API+"/api/track/"+id.slice(1))).json();return j.uid?stMap(j):null}
   if(id[0]==="a"){const j=await(await fetch(`https://api.audius.co/v1/tracks/${id.slice(1)}?app_name=${APP}`)).json();return j.data?audMap(j.data):null}
   const j=await(await fetch(`https://itunes.apple.com/lookup?id=${id.slice(1)}`)).json();const x=j.results?.[0];return x?itnMap(x):null;
 }
@@ -310,9 +324,9 @@ async function doSearch(q){
   q=q.trim();const my=++ticket;
   if(!q){results=[];$('search-grid').innerHTML='<div class="empty">Ищем по Audius (полные треки) и iTunes (превью 30 сек)</div>';return}
   $('search-grid').innerHTML='<div class="empty">Ищу…</div>';
-  const [a,i]=await Promise.allSettled([searchAudius(q),searchItunes(q)]);
+  const [e,a,i]=await Promise.allSettled([searchStore(q),searchAudius(q),searchItunes(q)]);
   if(my!==ticket)return;
-  results=[...(a.value||[]),...(i.value||[])];
+  results=[...(e.value||[]),...(a.value||[]),...(i.value||[])];
   if(results.length)renderSearch();else $('search-grid').innerHTML='<div class="empty">Ничего не найдено</div>';
 }
 /* Добавление из бота: ?add=id1,id2 */
@@ -330,7 +344,7 @@ async function handleAdd(){
 function playFrom(n,i){queue=listOf(n).slice();qi=i;load()}
 function load(){const t=queue[qi];if(!t)return;audio.src=t.url;audio.play().catch(()=>{});ui(t)}
 function ui(t){
-  $('mini-cover').style.backgroundImage=$('full-cover').style.backgroundImage=`url('${t.cover}')`;
+  $('mini-cover').style.backgroundImage=$('full-cover').style.backgroundImage=bg(t);
   $('mini-title').textContent=$('full-title').textContent=t.title;
   $('mini-artist').textContent=$('full-artist').textContent=t.artist;
 }
@@ -365,5 +379,5 @@ audio.ontimeupdate=()=>{
 };
 function seekAudio(v){if(audio.duration)audio.currentTime=v/100*audio.duration}
 function fmt(s){const m=Math.floor(s/60),r=Math.floor(s%60);return m+":"+(r<10?"0":"")+r}
-renderAll();modeUi();btns();handleAdd();
+renderAll();modeUi();btns();handleAdd();loadChart();
 </script></body></html>
